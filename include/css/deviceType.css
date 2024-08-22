@@ -1,0 +1,52 @@
+#main{
+    z-index: initial;
+}
+
+#device_type-modal{
+}
+
+#device_type-modal > .area-frist{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#device_type-modal > .area-frist > input[type=text]{
+    width: 100%;
+}
+
+#device_type-modal > .area-second{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top:12px;
+}
+
+#device_type-modal > .area-select{
+}
+
+.modal{
+    width: 80%;
+    top:-80px;
+}
+
+.btn{
+    outline:none;
+}
+
+.btn-danger{
+    background-color: lightcoral;
+}
+
+.cactiTable{
+    z-index: unset;
+}
+
+.mb-1{
+    margin-bottom: 16px !important;
+}
+
+#supplier_select{
+    width: 100%;
+}
