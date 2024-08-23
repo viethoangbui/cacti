@@ -941,7 +941,7 @@ function api_device_save($id, $device_template_id, $description, $hostname, $snm
 	$availability_method, $ping_method, $ping_port, $ping_timeout, $ping_retries,
 	$notes, $snmp_auth_protocol, $snmp_priv_passphrase, $snmp_priv_protocol, $snmp_context, $snmp_engine_id,
 	$max_oids = 5, $device_threads = 1, $poller_id = 1, $site_id = 1, $external_id = '', $location = '', $bulk_walk_size = -1, 
-	$supplier_id, $device_type_id) {
+	$supplier_id, $device_type_id, $model_id) {
 	global $config;
 
 	include_once($config['base_path'] . '/lib/utility.php');
@@ -1030,8 +1030,9 @@ function api_device_save($id, $device_template_id, $description, $hostname, $snm
 	$save['max_oids']             = form_input_validate($max_oids, 'max_oids', '^[0-9]+$', false, 3);
 	$save['bulk_walk_size']       = form_input_validate($bulk_walk_size, 'bulk_walk_size', '^[-0-9]+$', false, 3);
 	$save['device_threads']       = form_input_validate($device_threads, 'device_threads', '^[0-9]+$', true, 3);
-	$save['supplier_id'] 		  = form_input_validate($supplier_id, 'supplier_id', '^[0-9]+$', true, 3);
-	$save['loaithietbi'] 	  	  = form_input_validate($device_type_id, 'device_type_id', '^[0-9]+$', true, 3);
+	$save['supplier_id'] 		  = form_input_validate($supplier_id, 'supplier_id', '', true, 3);
+	$save['loaithietbi'] 	  	  = form_input_validate($device_type_id, 'device_type_id', '', true, 3);
+	$save['model'] 	  	  		  = form_input_validate($model_id, 'model_id', '', true, 3);
 
 	$device_id = 0;
 

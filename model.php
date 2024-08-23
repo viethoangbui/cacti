@@ -3,25 +3,24 @@ require_once('./include/auth.php');
 top_header();
 initial();
 ?>
-<link rel="stylesheet" href="./include/css/deviceType.css" />
+<link rel="stylesheet" href="./include/css/model.css" />
 <?php
 function drawBodyTable()
 {
-    $sql = 'SELECT dt.*, sup.name as supplier_name FROM device_type AS dt
-                LEFT JOIN suppliers as sup
-                ON dt.supplier_id=sup.id
-                WHERE is_enable = 1';
+    $sql = 'SELECT m.*,dt.name as device_type_name FROM model AS m
+                LEFT JOIN device_type as dt
+                ON m.device_type_id=dt.id
+                WHERE m.is_enable = 1';
 
     if (!empty($_GET['search'])) {
         $search = '%' . $_GET['search'] . '%';
-        $sql .= " AND dt.name LIKE ?";
+        $sql .= " AND m.name LIKE ?";
         $data = db_fetch_assoc_prepared($sql, array($search));
     } else {
         $data = db_fetch_assoc($sql);
     }
-
     if (count($data) === 0) {
-        return "<tr class='tableRow'><td colspan='" . (3) . "'><em>" . __('No Device type Found') . "</em></td></tr>\n";
+        return "<tr class='tableRow'><td colspan='" . (3) . "'><em>" . __('No Model type Found') . "</em></td></tr>\n";
     }
 
     $result = '';
@@ -29,19 +28,22 @@ function drawBodyTable()
     foreach ($data as $index => $value) {
         $result .= "
                         <tr class=\"odd selectable tableRow\" 
-                            id=\"{$value["id"]}\" 
+                            id=\"{$value["id"]}\"
                             name=\"{$value["name"]}\" 
-                            supplier=\"{$value["supplier_id"]}\"
-                            supplier-name=\"{$value["supplier_name"]}\"
+                            device-type=\"{$value["device_type_id"]}\"
+                            device_type-name=\"{$value["device_type_name"]}\" 
                             >
                             <td class=\"nowrap\">
                                 {$value["id"]}
                             </td>
-                            <td class=\"nowrap device_type-name\">
+                            <td class=\"nowrap model-name\">
                                 {$value["name"]}
                             </td>
                             <td class=\"nowrap\">
-                                {$value["supplier_name"]}
+                                {$value["snmp_version"]}
+                            </td>
+                            <td class=\"nowrap\">
+                                {$value["device_type_name"]}
                             </td>
                             <td class=\"nowrap\">
                                 {$value["owner"]}
@@ -71,11 +73,11 @@ function drawBodyTable()
 
 function drawSelect()
 {
-    $sql = 'SELECT id, name FROM suppliers';
+    $sql = 'SELECT id, name FROM device_type';
 
     $data = db_fetch_assoc($sql);
     $selector = '
-                    <select name="supplier_id" id="supplier_select">
+                    <select name="device_type_id" id="device_type_select">
                     <option>None</option>
                     ';
     $content = '';
@@ -90,7 +92,7 @@ function drawSelect()
     return $selector;
 }
 
-function update($input, $supplierId, $id)
+function update($input, $device_typeId, $id)
 {
     $pattern = '/<[^>]*>|javascript:[^"\'\s]*|data:[^"\'\s]*|on\w+\s*=\s*[^"\'\s]*/i';
 
@@ -98,24 +100,24 @@ function update($input, $supplierId, $id)
 
     $names = db_fetch_cell_prepared(
         'SELECT count(*)
-        FROM device_type
+        FROM model
         WHERE id != ? and name = ? and is_enable = 1',
         array($id, trim($name, ' '))
     );
 
-    if ($names == 0) {
+    if ($names == 0 && $device_typeId !== 'None') {
         db_execute_prepared(
-            'UPDATE device_type
+            'UPDATE model
                 SET name = ?, 
                 updated_at = CURRENT_TIMESTAMP(),
-                supplier_id = ?
+                device_type_id = ?
                 WHERE id = ?',
-            array(trim($name, ' '), $supplierId, $id)
+            array(trim($name, ' '), $device_typeId, $id)
         );
     }
 }
 
-function create($input, $supplierId)
+function create($input, $deviceTypeId)
 {
     $pattern = '/<[^>]*>|javascript:[^"\'\s]*|data:[^"\'\s]*|on\w+\s*=\s*[^"\'\s]*/i';
 
@@ -128,16 +130,16 @@ function create($input, $supplierId)
         array(trim($name))
     );
 
-    if ($total >= 1 || $supplierId === 'None') {
+    if ($total >= 1 || $deviceTypeId === 'None') {
         header('Location: ' . $_SERVER['PHP_SELF']);
     } else {
         $user = db_fetch_assoc_prepared('SELECT username
                                             FROM user_auth 
                                             WHERE id = ?', array($_SESSION['sess_user_id']));
         db_execute_prepared(
-            'INSERT INTO device_type
-                (name, supplier_id, owner, edited_by) VALUES (?, ?, ?, ?)',
-            array(trim($name, " "), $supplierId, $user[0]['username'], $user[0]['username'])
+            'INSERT INTO model
+                (name, device_type_id, owner, edited_by) VALUES (?, ?, ?, ?)',
+            array(trim($name, " "), $deviceTypeId, $user[0]['username'], $user[0]['username'])
         );
     }
 }
@@ -148,7 +150,7 @@ function delete($id)
         $enableInsert = $isEnable == "1" ? "0" : "1";
 
         db_execute_prepared(
-            'UPDATE device_type
+            'UPDATE model
             SET is_enable = ?, updated_at = CURRENT_TIMESTAMP()
             WHERE id = ?',
             array($enableInsert,$id)
@@ -157,15 +159,14 @@ function delete($id)
 
 function initial()
 {
-    if (isset($_POST['name']) && isset($_POST['supplier_id'])) {
+    if (isset($_POST['name']) && isset($_POST['device_type_id'])) {
         $action = !empty($_POST['id']) ? 'update' : 'create';
-
         switch ($action) {
             case 'update':
-                update($_POST['name'], $_POST['supplier_id'], $_POST['id']);
+                update($_POST['name'], $_POST['device_type_id'], $_POST['id']);
                 break;
             case 'create':
-                create($_POST['name'], $_POST['supplier_id']);
+                create($_POST['name'], $_POST['device_type_id']);
                 break;
             default:
                 break;
@@ -178,7 +179,7 @@ function initial()
     }
 }
 
-html_start_box(__('Device type'), '100%', '', '3', 'center', [
+html_start_box(__('Model'), '100%', '', '3', 'center', [
     [
         'href' => '#ex1',
         'rel' => 'modal:open'
@@ -187,7 +188,7 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
 ?>
 <tr class='even'>
     <td>
-        <form id='form_device_type' action='sites.php'>
+        <form id='form_model' action='sites.php'>
             <table class='filterTable'>
                 <tr>
                     <td>
@@ -207,13 +208,13 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
         </form>
         <script type='text/javascript'>
             function applyFilter() {
-                strURL = 'device_type.php?header=false';
+                strURL = 'model.php?header=false';
                 strURL += '&search=' + $('#filter').val();
                 loadPageNoHeader(strURL);
             }
 
             function clearFilter() {
-                strURL = 'device_type.php?clear=1&header=false';
+                strURL = 'model.php?clear=1&header=false';
                 loadPageNoHeader(strURL);
             }
 
@@ -226,7 +227,7 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
                     clearFilter();
                 });
 
-                $('#form_device_type').submit(function(event) {
+                $('#form_model').submit(function(event) {
                     event.preventDefault();
                     applyFilter();
                 });
@@ -241,8 +242,9 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
         <tbody>
             <tr class="tableHeader">
                 <th>ID</th>
+                <th>Model</th>
+                <th>Snmp version</th>
                 <th>Device type</th>
-                <th>Supplier</th>
                 <th>Owner</th>
                 <th>Last Edited</th>
                 <th>Edited By</th>
@@ -259,17 +261,17 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
             <div class="modal-body">
                 <form action="" method="post" id="device_type-modal">
                     <div class="area-frist mb-1">
-                        <label for="device_type-name" class="col-form-label">Device type Name:</label>
+                        <label for="model-name" class="col-form-label">Model name:</label>
                         <input type="text"
                             class="form-control"
-                            id="device_type-name"
+                            id="model-name"
                             name="name">
-                        <input type="hidden" id="device_type-id" name="id" />
-                        <input type="hidden" id="supplier_id-update" name="supplier-id" />
+                        <input type="hidden" id="model-id" name="id" />
+                        <input type="hidden" id="device_type_id-update" name="device_type_id" />
                     </div>
 
                     <div class="area-frist area-select">
-                        <label class="col-form-label">Supplier:</label>
+                        <label class="col-form-label">Device type:</label>
                         <?= drawSelect() ?>
                     </div>
 
@@ -309,11 +311,11 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
     document.querySelectorAll('.device_type-edit').forEach(element => {
         element.addEventListener('click', (el) => {
             const tr = el.target.parentNode.parentNode;
-            document.getElementById('device_type-name').value = tr.getAttribute('name');
-            document.getElementById('device_type-id').value = tr.getAttribute('id');
-            $('#supplier_id-update').attr('supplier_id-update', tr.getAttribute('supplier'));
-            $('#supplier_select').val(tr.getAttribute('supplier'));
-            $('#supplier_select-button .ui-selectmenu-text').text(tr.getAttribute('supplier-name'));
+            document.getElementById('model-name').value = tr.getAttribute('name');
+            document.getElementById('model-id').value = tr.getAttribute('id');
+            $('#device_type_id-update').attr('device_type_id-update', tr.getAttribute('device_type'));
+            $('#device_type_select').val(tr.getAttribute('device_type'));
+            $('#device_type_select-button .ui-selectmenu-text').text(tr.getAttribute('device_type-name'));
             
 
             $('.area-second button[type=submit]').removeAttr('disabled');
@@ -331,20 +333,20 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
 
     $(document).ready(function() {
         $('#ex1').on('modal:close', () => {
-            document.getElementById('device_type-name').value = '';
+            document.getElementById('model-name').value = '';
         })
 
         $('#ex1').on('modal:open', () => {
-            if (!document.getElementById('device_type-name').value) {
+            if (!document.getElementById('model-name').value) {
                 $('.area-second button[type=submit]').addClass('ui-button-disabled ui-state-disabled');
             }
         })
 
         $('#ex1 .area-second a').click(() => {
-            document.getElementById('device_type-name').value = '';
+            document.getElementById('model-name').value = '';
         })
 
-        $('#device_type-name').on('change keydown paste input', (e) => {
+        $('#model-name').on('change keydown paste input', (e) => {
             const value = e.target.value.trim();
 
             if (Boolean(value)) {

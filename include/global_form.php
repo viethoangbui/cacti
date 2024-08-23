@@ -1194,9 +1194,18 @@ $fields_host_edit = array(
 		'method' => 'drop_array',
 		'friendly_name' => __('Device type'),
 		'description' => __('Choose device type'),
-		'value' => '|arg1:supplier_id|',
+		'value' => '|arg1:device_type_id|',
 		'none_value' => __('None'),
-		'default' => read_config_option('default_supplier'),
+		'default' => read_config_option('default_device_type'),
+		'array' => []
+	),
+	'model_id' => array(
+		'method' => 'drop_array',
+		'friendly_name' => __('Model'),
+		'description' => __('Choose model'),
+		'value' => '|arg1:model_id|',
+		'none_value' => __('None'),
+		'default' => read_config_option('default_model'),
 		'array' => []
 	),
 	'host_gen_head' => array(

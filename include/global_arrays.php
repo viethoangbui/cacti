@@ -995,8 +995,9 @@ if ($config['poller_id'] == 1 || $config['connection'] == 'online') {
 		__('Management') => array(
 			'host.php'             => __('Devices'),
 			'ListCustomer.php'     => __('Customer'),
-			'supplier.php'     => __('supplier'),
-			'device_type.php'     => __('Device type'),
+			'supplier.php'     => __('Suppliers'),
+			'device_type.php'     => __('Device types'),
+			'model.php'     => __('Models'),
 			'sites.php'            => __('Sites'),
 			'tree.php'             => __('Trees'),
 			'graphs.php'           => __('Graphs'),
@@ -1353,6 +1354,7 @@ $user_auth_realm_filenames = array(
 	'help.php' => -1,
 	'supplier.php' => -1,
 	'device_type.php' => -1,
+	'model.php' => -1,
 );
 
 $hash_type_codes = array(
