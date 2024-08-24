@@ -1,69 +1,61 @@
-function getDeviceType(e, deviceId = null){
-    $.get(urlPath+`host.php?action=ajax_device_type&supplier_id=${e.target.value}`)
-    .done(function(data) {
-        if(data.charAt(0) !== '['){
-            return
-        }
-        
-        const dataArr = JSON.parse(data)
+function fetchData(url, callback) {
+    $.get(url)
+        .done(function (data) {            
+            if (data.charAt(0) !== '[') {
+                return;
+            }
 
-        if(typeof dataArr === 'object' && !Array.isArray(dataArr) && dataArr !== null){
-            return;
-        }
-        
-        if(dataArr?.length !== 0){
-            let selectContent = '<option value="0">None</option>';
-            dataArr.forEach((item, index) => {
-                selectContent+= `<option value="${item.id}">${item.name}</option>`
-            })
+            const dataArr = JSON.parse(data);
             
-            $('#device_type_id').html(selectContent)
-        }else{
-            $('#device_type_id').html('<option value="0">None</option>')
-        }
 
-        if(deviceId){            
-            $('#device_type_id').val(deviceId).change()
-        }
-    })
-    .fail(function(data) {				
-        getPresentHTTPError(data);
+            if (typeof dataArr === 'object' && !Array.isArray(dataArr) && dataArr !== null) {
+                return;
+            }
+
+            callback(dataArr);
+        })
+        .fail(function (data) {
+            getPresentHTTPError(data);
+        });
+}
+
+function populateSelect(elementId, dataArr, selectedId = null) {
+    let selectContent = '';
+    if (dataArr?.length !== 0) {
+        dataArr.forEach(item => {
+            selectContent += `<option value="${item.id}">${item.name}</option>`;
+        });
+    }
+
+    $(`#${elementId}`).html(selectContent);
+
+    if (selectedId) {
+        $(`#${elementId}`).val(selectedId).change();
+    }
+}
+
+function getDeviceType(e, deviceId = null) {
+    const url = `${urlPath}host.php?action=ajax_device_type&supplier_id=${e.target.value}`;
+    fetchData(url, (dataArr) => populateSelect('device_type_id', dataArr, deviceId));
+}
+
+function getModel(e, modelId = null) {
+    const url = `${urlPath}host.php?action=ajax_model&device_type_id=${e.target.value}`;
+    fetchData(url, (dataArr) => populateSelect('model_id', dataArr, modelId));
+}
+
+function getDetailHost(supplierId, deviceId, modelId) {
+    const deviceTypeUrl = `${urlPath}host.php?action=ajax_device_type&supplier_id=${supplierId}`;
+    fetchData(deviceTypeUrl, (dataArr) => {
+        populateSelect('device_type_id', dataArr, deviceId);
+        
+        const modelUrl = `${urlPath}host.php?action=ajax_model&device_type_id=${deviceId}`;
+        fetchData(modelUrl, (modelDataArr) => populateSelect('model_id', modelDataArr, modelId));
     });
 }
 
-function getModel(e, modelId){        
-    $.get(urlPath+`host.php?action=ajax_model&device_type_id=${e.target.value}`)
-    .done(function(data) {
-        if(data.charAt(0) !== '['){
-            return
-        }			
-        const dataArr = JSON.parse(data)
 
-        if(typeof dataArr === 'object' && !Array.isArray(dataArr) && dataArr !== null){
-            return;
-        }
-        
-        if(dataArr?.length !== 0){
-            let selectContent = '<option value="0">None</option>';
-            dataArr.forEach((item, index) => {
-                selectContent+= `<option value="${item.id}">${item.name}</option>`
-            })
-            
-            $('#model_id').html(selectContent)
-        }else{
-            $('#model_id').html('<option value="0">None</option>')
-        }
-        
-        if(modelId){
-            $('#model_id').val(modelId).change()
-        }
-    })
-    .fail(function(data) {				
-        getPresentHTTPError(data);
-    });
-}
-
-$(document).ready(function() {
+$(document).ready(function () {
     $('#device_type_id-button').hide();
     $('#device_type_id').show();
     $('#device_type_id').addClass('ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-open ui-corner-top')

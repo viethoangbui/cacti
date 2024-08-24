@@ -66,9 +66,9 @@ define('CACTI_DOCUMENTATION_TOC', 'docs/Table-of-Contents.html');
 // CuongLV
 $database_type     = 'mysql';
 $database_default  = 'cacti';
-$database_hostname = '172.16.86.16';
-$database_username = 'cacti_hoalac';
-$database_password = 'cacti_hoalac';
+$database_hostname = 'localhost';
+$database_username = 'cactiuser';
+$database_password = 'cactiuser';
 $database_port     = '3306';
 $database_retries  = 2;
 

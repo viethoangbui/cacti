@@ -191,11 +191,13 @@ switch (get_request_var('action')) {
     Global Form Functions
    -------------------------- */
 
-function getDataJavascript() {
+function getDataJavascript()
+{
 	echo isset($_GET['id']) ? json_encode(db_fetch_row_prepared('SELECT * FROM host WHERE id = ?', array($_GET['id']))) : json_encode([]);
 }
 
-function checkEdit(){
+function checkEdit()
+{
 	echo isset($_GET['id']);
 }
 
@@ -280,8 +282,9 @@ function get_site_locations()
 
 function get_device_types()
 {
+	$noneItem = ['id' => '0','name'=> 'None'];
 	if (isempty_request_var('supplier_id')) {
-		echo json_encode(['data' => []]);
+		echo json_encode([$noneItem]);
 	} else {
 		$supplierId = get_filter_request_var('supplier_id');
 		$deviceTypes = db_fetch_assoc_prepared(
@@ -290,15 +293,16 @@ function get_device_types()
 				WHERE supplier_id = ?',
 			array($supplierId)
 		);
-
+		array_push($deviceTypes, $noneItem);
 		echo json_encode($deviceTypes);
 	}
 }
 
 function get_model()
 {
+	$noneItem = ['id' => '0','name'=> 'None'];
 	if (isempty_request_var('device_type_id')) {
-		echo json_encode(['data' => []]);
+		echo json_encode([$noneItem]);
 	} else {
 		$supplierId = get_filter_request_var('device_type_id');
 		$deviceTypes = db_fetch_assoc_prepared(
@@ -308,6 +312,7 @@ function get_model()
 			array($supplierId)
 		);
 
+		array_push($deviceTypes, $noneItem);
 		echo json_encode($deviceTypes);
 	}
 }
@@ -1508,20 +1513,20 @@ function device_javascript()
 			let checkUpdate = '<?php echo isset($_GET['id']) ?>'
 
 			if (checkUpdate) {
-				const jsonHost = '<?php echo getDataJavascript()?>'
+				const jsonHost = '<?php echo getDataJavascript() ?>'
 				const host = JSON.parse(jsonHost)
 
 				if (host?.length !== 0) {
-					getDeviceType({target: {value: host.supplier_id}}, host.loaithietbi)
-					getModel({target: {value: host.loaithietbi}}, host.model)
+					getDetailHost(host.supplier_id, host.loaithietbi, host.model)
 				}
 			}
-			let checkEdit = '<?php echo checkEdit()?>'
-			
-			if(!checkEdit){
-				$('#supplier_id').on('change', (e) => getDeviceType(e))
-				$('#device_type_id').on('change', (e) => getModel(e))
-			}
+
+			$('#supplier_id').on('change', (e) => {
+				getDeviceType(e)
+				$('#model_id').html('<option value="0">None</option>');
+			})
+			$('#device_type_id').on('change', (e) => getModel(e))
+
 		});
 	</script>
 <?php
