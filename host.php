@@ -282,7 +282,7 @@ function get_site_locations()
 
 function get_device_types()
 {
-	$noneItem = ['id' => '0','name'=> 'None'];
+	$noneItem = ['id' => 'None','name'=> 'None'];
 	if (isempty_request_var('supplier_id')) {
 		echo json_encode([$noneItem]);
 	} else {
@@ -290,17 +290,19 @@ function get_device_types()
 		$deviceTypes = db_fetch_assoc_prepared(
 			'SELECT name, id
 				FROM device_type
-				WHERE supplier_id = ?',
+				WHERE supplier_id = ?
+				AND is_enable = 1
+				',
 			array($supplierId)
 		);
-		array_push($deviceTypes, $noneItem);
+		array_unshift($deviceTypes, $noneItem);
 		echo json_encode($deviceTypes);
 	}
 }
 
 function get_model()
 {
-	$noneItem = ['id' => '0','name'=> 'None'];
+	$noneItem = ['id' => 'None','name'=> 'None'];
 	if (isempty_request_var('device_type_id')) {
 		echo json_encode([$noneItem]);
 	} else {
@@ -308,11 +310,13 @@ function get_model()
 		$deviceTypes = db_fetch_assoc_prepared(
 			'SELECT name, id
 				FROM model
-				WHERE device_type_id = ?',
+				WHERE device_type_id = ?
+				AND is_enable = 1
+				',
 			array($supplierId)
 		);
 
-		array_push($deviceTypes, $noneItem);
+		array_unshift($deviceTypes, $noneItem);
 		echo json_encode($deviceTypes);
 	}
 }

@@ -1,0 +1,86 @@
+﻿body {
+}
+
+p {
+    margin: 0;
+}
+
+.legend-note{
+    width: auto;
+    margin: 10px;
+    padding-left: 30px;
+}
+
+.legend-row{
+    padding: 4px;
+    display: flex;
+    gap: 8px;
+}
+
+.legend-box{
+    width: 18px;
+    height: 18px;
+    border: 1px solid #000000;
+}
+
+.legend-box-in {
+    background-color: #00FF00;
+}
+
+.legend-box-out {
+    background-color: #0000FF;
+}
+
+.legend-box-95 {
+    background-color: #f54e42;
+}
+
+.legend-title{
+    font-size: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.unit-m::after{
+    content: " M"
+}
+
+#graphs-custom-filter{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+#graphs-custom-filter > div:first-child{
+    margin-right: 2rem;
+}
+
+#graphs-custom-filter > div label{
+    text-wrap: nowrap;
+    margin: 0;
+    margin-right: 0.5rem;
+    font-weight: bold;
+}
+
+#graphs-custom-filter input{
+    border-radius: 6px;
+    outline: none;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+}
+
+.btn-custom{
+    height: 38px;
+    text-transform: capitalize;
+    border-radius: 7px;
+}
+
+.ms-1{
+    margin-left: 20px;
+}

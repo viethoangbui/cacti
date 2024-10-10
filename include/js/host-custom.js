@@ -54,7 +54,6 @@ function getDetailHost(supplierId, deviceId, modelId) {
     });
 }
 
-
 $(document).ready(function () {
     $('#device_type_id-button').hide();
     $('#device_type_id').show();

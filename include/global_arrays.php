@@ -391,6 +391,9 @@ $messages = array(
 		'level' => MESSAGE_LEVEL_ERROR),
 	'custom_error' => array(
 		'message' => __('Unexpected error occurred'),
+		'level' => MESSAGE_LEVEL_ERROR),
+	'name_used' => array(
+		'message' => __('Tên này đã được sử dụng!'),
 		'level' => MESSAGE_LEVEL_ERROR)
 );
 
@@ -1000,7 +1003,9 @@ if ($config['poller_id'] == 1 || $config['connection'] == 'online') {
 			'model.php'     => __('Models'),
 			'sites.php'            => __('Sites'),
 			'tree.php'             => __('Trees'),
+			'total.php'     => __('Total'),
 			'graphs.php'           => __('Graphs'),
+			// 'graphs_custom.php'           => __('Graphs Custom'),
 			'data_sources.php'     => __('Data Sources'),
 			'aggregate_graphs.php' => __('Aggregates'),
 		),
@@ -1350,11 +1355,13 @@ $user_auth_realm_filenames = array(
 	'aggregate_templates.php' => 5,
 	'aggregate_graphs.php' => 5,
 	'spikekill.php' => 1043,
-	'permission_denied.php' => -1,
+	'permission_denied.php' => -1, 
 	'help.php' => -1,
 	'supplier.php' => -1,
 	'device_type.php' => -1,
 	'model.php' => -1,
+	'total.php' => -1,
+	'graphs_custom.php' => -1,
 );
 
 $hash_type_codes = array(

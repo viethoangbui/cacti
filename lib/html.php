@@ -333,11 +333,7 @@ function html_graph_area(&$graph_array, $no_graphs_message = '', $extra_url_args
 					<tr>
 						<td>
 							<div class='graphWrapper' style='width:100%;' id='wrapper_<?php print $graph['local_graph_id']?>' graph_width='<?php print $graph['width'];?>' graph_height='<?php print $graph['height'];?>' title_font_size='<?php print ((read_user_setting('custom_fonts') == 'on') ? read_user_setting('title_size') : read_config_option('title_size'));?>'></div>
-							<?php print (read_user_setting('show_graph_title') == 'on' ? "<span class='center'>" . html_escape($graph['title_cache']) . '</span>' : '');?>
 						</td>
-						<?php if (is_realm_allowed(27)) { ?><td id='dd<?php print $graph['local_graph_id'];?>' class='noprint graphDrillDown'>
-							<?php graph_drilldown_icons($graph['local_graph_id'], 'graph_buttons', $tree_id, $branch_id);?>
-						</td><?php } ?>
 					</tr>
 				</table>
 				<div>

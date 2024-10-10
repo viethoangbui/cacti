@@ -818,8 +818,6 @@ function html_validate_tree_vars() {
 function grow_right_pane_tree($tree_id, $leaf_id, $host_group_data) {
 	for ($i = 10; $i <= 15; $i++){
 		load_pane_tree($i, $leaf_id, $host_group_data);
-		echo "Leu leu";
-
 	};
 	
 }

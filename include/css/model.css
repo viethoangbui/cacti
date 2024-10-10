@@ -2,20 +2,20 @@
     z-index: initial;
 }
 
-#device_type-modal{
+#model-modal{
 }
 
-#device_type-modal > .area-frist{
+#model-modal > .area-frist{
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-#device_type-modal > .area-frist > input[type=text]{
+#model-modal > .area-frist > input[type=text]{
     width: 100%;
 }
 
-#device_type-modal > .area-second{
+#model-modal > .area-second{
     display: flex;
     gap: 8px;
     align-items: center;
@@ -23,7 +23,7 @@
     margin-top:12px;
 }
 
-#device_type-modal > .area-select{
+#model-modal > .area-select{
 }
 
 .modal{
@@ -49,4 +49,15 @@
 
 #supplier_select{
     width: 100%;
+}
+
+#supplier_select-button, #device_type_id{
+    width: 100% !important;
+}
+#model-form-first-area{
+    gap: 33px !important;
+}
+
+#model-snmp-ver{
+    gap: 2px !important;
 }

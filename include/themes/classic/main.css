@@ -924,6 +924,7 @@ legend {
 }
 
 .loginBody, .logoutBody {
+display: none;
 }
 
 .versionInfo {

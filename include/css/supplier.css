@@ -1,0 +1,41 @@
+#main{
+    z-index: initial;
+}
+
+#supplier-modal{
+}
+
+#supplier-modal > .area-frist{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#supplier-modal > .area-frist > input[type=text]{
+    width: 100%;
+}
+
+#supplier-modal > .area-second{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top:12px;
+}
+
+.modal{
+    width: 80%;
+    top:-80px;
+}
+
+.btn{
+    outline:none;
+}
+
+.btn-danger{
+    background-color: lightcoral;
+}
+
+#supplier_select-button, #supplier_id{
+    width: 100% !important;
+}

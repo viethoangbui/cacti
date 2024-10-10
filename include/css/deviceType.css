@@ -47,6 +47,27 @@
     margin-bottom: 16px !important;
 }
 
-#supplier_select{
-    width: 100%;
+#supplier_select, #supplier_select-button{
+    width: 100% !important;
+}
+
+.form-container-type{
+    display: flex;
+    flex-direction: column;
+}
+
+.form-container-type > div:first-child{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.form-container-type > div:last-child{
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+#device_type-name{
+    flex-grow: 1;
 }

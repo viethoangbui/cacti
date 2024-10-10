@@ -991,6 +991,7 @@ legend {
 }
 
 .loginBody, .logoutBody {
+display: none;
 	background: #161616;
 	background-image: -ms-linear-gradient(top, #161616 0%, #000000 100%);
 	background-image: -moz-linear-gradient(top, #161616 0%, #000000 100%);

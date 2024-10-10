@@ -400,7 +400,6 @@ case 'zoom':
 				<tr>
 					<td class='center'>
 						<div class='graphWrapper' id='wrapper_<?php print $graph['local_graph_id']?>' graph_id='<?php print $graph['local_graph_id'];?>' rra_id='<?php print $rra['id'];?>' graph_width='<?php print $graph['width'];?>' graph_height='<?php print $graph['height'];?>' title_font_size='<?php print ((read_user_setting('custom_fonts') == 'on') ? read_user_setting('title_size') : read_config_option('title_size'));?>'></div>
-                            <?php print (read_user_setting('show_graph_title') == 'on' ? "<span class='center'>" . html_escape($graph['title_cache']) . '</span>' : '');?>
 					</td>
 					<?php if (is_realm_allowed(27)) { ?><td id='dd<?php print $graph['local_graph_id'];?>' style='vertical-align:top;' class='graphDrillDown noprint'>
 						<a href='#' id='graph_<?php print $graph['local_graph_id'];?>_properties' class='iconLink properties'>
