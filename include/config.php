@@ -25,26 +25,11 @@
 /**
  * Make sure these values reflect your actual database/host/user/password
  */
-
-// $database_type     = 'mysql';
-// $database_default  = 'cacti';
-// $database_hostname = 'localhost';
-// $database_username = 'cactiuser';
-// $database_password = 'cactiuser';
-// $database_port     = '3306';
-// $database_retries  = 5;
-// $database_ssl      = false;
-// $database_ssl_key  = '';
-// $database_ssl_cert = '';
-// $database_ssl_ca   = '';
-// $database_persist  = false;
-
-//CuongLV
 $database_type     = 'mysql';
 $database_default  = 'cacti';
 $database_hostname = 'localhost';
-$database_username = 'cactiuser';
-$database_password = 'cactiuser';
+$database_username = 'root';
+$database_password = '';
 $database_port     = '3306';
 $database_retries  = 5;
 $database_ssl      = false;

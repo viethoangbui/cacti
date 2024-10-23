@@ -1,0 +1,120 @@
+.vidc-input{
+    display: block;
+    width: 98%;
+    font-size: 14px;
+    color: #495057;
+    background: #fbfbfb;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    max-height: 37px;
+    padding: 8px 0;
+    padding-left: 2%;
+    margin: 10px 0;
+}
+
+.vidc-btn{
+    display: block;
+    padding: 10px 0;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 20px;
+    text-decoration: none !important;
+    position: relative;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.vidc-btn-danger{
+    background: rgb(238, 0, 51);
+    color: #fff;
+}
+
+.vidc-btn-danger:hover{
+    background: initial;
+}
+
+.cactiLoginLogo{
+    display: none;
+}
+
+.loginBody{
+    background-color: rgb(245, 245, 245);
+    background-image: none;
+}
+
+.loginCenter{
+    border: 3px solid #efebeb;
+    background-image: none;
+    background-color: #fff;
+    top: 10%;
+    padding: 12px;
+    width: 60%;
+}
+
+.loginBody .loginHeader{
+    width: 100%;
+    background-color: #fff;
+}
+
+.loginBody .loginHeader img{
+    max-width: 110px;
+    height: auto;
+    margin: 1% 0 1% 1%;
+}
+
+.loginArea{
+    min-height: 250px;
+    text-shadow: none;
+}
+
+.loginArea legend{
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.loginArea .loginTitle {
+    color: #b8254f;
+    font-weight: 750;
+    font-size: 7pt;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.cactiLogin .cactiLoginDiv{
+    height: 100%;
+}
+
+.input-container {
+    position: relative;
+    display: inline-block;
+}
+
+.input-container::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+}
+
+.input-container-username::before{
+    background-image: url("data:image/svg+xml,%0A%3Csvg width='16' height='17' viewBox='0 0 16 17' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14.187 12.9906C13.8501 12.1927 13.3613 11.468 12.7477 10.8567C12.136 10.2437 11.4113 9.75492 10.6138 9.41741C10.6066 9.41384 10.5995 9.41206 10.5923 9.40848C11.7048 8.60491 12.4281 7.29598 12.4281 5.8192C12.4281 3.37277 10.4459 1.39062 7.99949 1.39062C5.55306 1.39062 3.57091 3.37277 3.57091 5.8192C3.57091 7.29598 4.29413 8.60491 5.40663 9.41027C5.39949 9.41384 5.39234 9.41563 5.3852 9.4192C4.5852 9.7567 3.86734 10.2406 3.25127 10.8585C2.63825 11.4702 2.14949 12.1949 1.81199 12.9924C1.48042 13.7732 1.3016 14.6104 1.2852 15.4585C1.28472 15.4775 1.28807 15.4965 1.29503 15.5143C1.302 15.532 1.31245 15.5482 1.32576 15.5618C1.33907 15.5755 1.35498 15.5863 1.37255 15.5937C1.39012 15.6011 1.40899 15.6049 1.42806 15.6049H2.49949C2.57806 15.6049 2.64056 15.5424 2.64234 15.4656C2.67806 14.0871 3.23163 12.796 4.2102 11.8174C5.2227 10.8049 6.56734 10.2478 7.99949 10.2478C9.43163 10.2478 10.7763 10.8049 11.7888 11.8174C12.7673 12.796 13.3209 14.0871 13.3566 15.4656C13.3584 15.5442 13.4209 15.6049 13.4995 15.6049H14.5709C14.59 15.6049 14.6089 15.6011 14.6264 15.5937C14.644 15.5863 14.6599 15.5755 14.6732 15.5618C14.6865 15.5482 14.697 15.532 14.7039 15.5143C14.7109 15.4965 14.7142 15.4775 14.7138 15.4585C14.6959 14.6049 14.5191 13.7746 14.187 12.9906ZM7.99949 8.89063C7.17984 8.89063 6.40841 8.57098 5.82806 7.99063C5.2477 7.41027 4.92806 6.63884 4.92806 5.8192C4.92806 4.99955 5.2477 4.22813 5.82806 3.64777C6.40841 3.06741 7.17984 2.74777 7.99949 2.74777C8.81913 2.74777 9.59056 3.06741 10.1709 3.64777C10.7513 4.22813 11.0709 4.99955 11.0709 5.8192C11.0709 6.63884 10.7513 7.41027 10.1709 7.99063C9.59056 8.57098 8.81913 8.89063 7.99949 8.89063Z' fill='%23595959'/%3E%3C/svg%3E%0A");
+}
+
+.input-container-password::before{
+    background-image: url("data:image/svg+xml,%0A%3Csvg width='20' height='21' viewBox='0 0 20 21' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M17.1428 9.43136H15.625V4.43136C15.625 2.85324 14.3459 1.57422 12.7678 1.57422H7.23211C5.65398 1.57422 4.37497 2.85324 4.37497 4.43136V9.43136H2.85711C2.46202 9.43136 2.14282 9.75056 2.14282 10.1456V18.7171C2.14282 19.1122 2.46202 19.4314 2.85711 19.4314H17.1428C17.5379 19.4314 17.8571 19.1122 17.8571 18.7171V10.1456C17.8571 9.75056 17.5379 9.43136 17.1428 9.43136ZM5.98211 4.43136C5.98211 3.74163 6.54238 3.18136 7.23211 3.18136H12.7678C13.4576 3.18136 14.0178 3.74163 14.0178 4.43136V9.43136H5.98211V4.43136ZM16.25 17.8242H3.74997V11.0385H16.25V17.8242ZM9.37497 14.7215V15.9046C9.37497 16.0028 9.45532 16.0831 9.55354 16.0831H10.4464C10.5446 16.0831 10.625 16.0028 10.625 15.9046V14.7215C10.8092 14.5893 10.9468 14.4019 11.0178 14.1865C11.0888 13.9711 11.0896 13.7387 11.0201 13.5227C10.9506 13.3068 10.8144 13.1185 10.6311 12.9849C10.4478 12.8513 10.2268 12.7794 9.99997 12.7794C9.77314 12.7794 9.55216 12.8513 9.36884 12.9849C9.18552 13.1185 9.04932 13.3068 8.97983 13.5227C8.91035 13.7387 8.91117 13.9711 8.98217 14.1865C9.05318 14.4019 9.19071 14.5893 9.37497 14.7215Z' fill='%23595959'/%3E%3C/svg%3E%0A");
+}
+
+.input-container input {
+    padding-left: 40px;
+    height: 30px;
+    width: 150%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}

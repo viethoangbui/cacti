@@ -701,7 +701,8 @@ label {
 }
 
 .cactiGraphPageHeadBackdrop {
-	background: transparent url("./images/cacti_logo.svg") no-repeat scroll left 40% / 380px auto;
+	background: #fff;
+	/* background: transparent url("./images/cacti_logo.svg") no-repeat scroll left 40% / 380px auto; */
 	padding-bottom: 0px;
 	float: right;
 	width: 400px;
@@ -713,7 +714,8 @@ label {
 }
 
 .cactiConsolePageHeadBackdrop {
-	background: transparent url("./images/cacti_logo.svg") no-repeat scroll left 40% / 380px auto;
+	background: #fff;
+	/* background: transparent url("./images/cacti_logo.svg") no-repeat scroll left 40% / 380px auto; */
 	padding-bottom: 0px;
 	float: right;
 	width: 400px;
@@ -1930,7 +1932,8 @@ td#tabs {
 }
 
 .cactiGraphHeaderBackground {
-	background: transparent url("./images/cacti_logo.svg") no-repeat scroll left 10% / 380px auto;
+	background: #fff;
+	/* background: transparent url("./images/cacti_logo.svg") no-repeat scroll left 10% / 380px auto; */
 	height: 35px;
 	width: 500px;
 	float: right;

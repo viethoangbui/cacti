@@ -67,7 +67,7 @@ if (get_nfilter_request_var('action') == 'login' || $auth_method == 2) {
 		$realm = $frv_realm;
 	}
 
-	cacti_log("DEBUG: User '" . $username . "' attempting to login with realm ". $frv_realm . ", using method " . $auth_method, false, 'AUTH', POLLER_VERBOSITY_DEBUG);
+	cacti_log("DEBUG: User '" . $username . "' attempting to login with realm " . $frv_realm . ", using method " . $auth_method, false, 'AUTH', POLLER_VERBOSITY_DEBUG);
 
 	switch ($auth_method) {
 		case '0': // No authentication, should not be reachable
@@ -126,10 +126,12 @@ if (get_nfilter_request_var('action') == 'login' || $auth_method == 2) {
 	/* Guest account checking - Not for builtin */
 	if (!$error && !cacti_sizeof($user) && get_guest_account() > 0) {
 		/* Locate guest user record */
-		$user = db_fetch_row_prepared('SELECT *
+		$user = db_fetch_row_prepared(
+			'SELECT *
 			FROM user_auth
 			WHERE id = ?',
-			array(get_guest_account()));
+			array(get_guest_account())
+		);
 
 		if ($user) {
 			cacti_log("LOGIN: Authenticated user '" . $username . "' using guest account '" . $user['username'] . "'", false, 'AUTH');
@@ -163,15 +165,17 @@ if (get_nfilter_request_var('action') == 'login' || $auth_method == 2) {
 
 		$client_addr = get_client_addr();
 
-		db_execute_prepared('INSERT IGNORE INTO user_log
+		db_execute_prepared(
+			'INSERT IGNORE INTO user_log
 			(username, user_id, result, ip, time)
 			VALUES (?, ?, 1, ?, NOW())',
-			array($username, $user['id'], $client_addr));
+			array($username, $user['id'], $client_addr)
+		);
 
 		/* check if the user account is enabled with the exception of guest users */
 		$user_enabled = true;
 		if (!$guest_user && isset($user['enabled'])) {
-			$user_enabled = ($user['enabled'] == 'on' ? true:false);
+			$user_enabled = ($user['enabled'] == 'on' ? true : false);
 		}
 
 		/* check if the user is enabled */
@@ -215,13 +219,15 @@ if (get_nfilter_request_var('action') == 'login' || $auth_method == 2) {
 			}
 
 			if (db_table_exists('user_auth_group')) {
-				$group_options = db_fetch_cell_prepared('SELECT MAX(login_opts)
+				$group_options = db_fetch_cell_prepared(
+					'SELECT MAX(login_opts)
 					FROM user_auth_group AS uag
 					INNER JOIN user_auth_group_members AS uagm
 					ON uag.id=uagm.group_id
 					WHERE user_id = ?
 					AND login_opts != 4',
-					array($_SESSION['sess_user_id']));
+					array($_SESSION['sess_user_id'])
+				);
 
 				if (!empty($group_options)) {
 					$user['login_opts'] = $group_options;
@@ -237,13 +243,15 @@ if (get_nfilter_request_var('action') == 'login' || $auth_method == 2) {
 			auth_login_redirect($user['login_opts']);
 		}
 	} else {
-		$id = db_fetch_cell_prepared('SELECT id
+		$id = db_fetch_cell_prepared(
+			'SELECT id
 			FROM user_auth
 			WHERE username = ?
 			AND realm = ?',
-			array($username, $frv_realm));
+			array($username, $frv_realm)
+		);
 
-		switch($frv_realm) {
+		switch ($frv_realm) {
 			case '0':
 			case '1':
 				$realm_name = 'Local';
@@ -257,10 +265,12 @@ if (get_nfilter_request_var('action') == 'login' || $auth_method == 2) {
 		}
 
 		/* BAD username/password builtin and LDAP */
-		db_execute_prepared('INSERT IGNORE INTO user_log
+		db_execute_prepared(
+			'INSERT IGNORE INTO user_log
 			(username, user_id, result, ip, time)
 			VALUES (?, ?, 0, ?, NOW())',
-			array($username, !empty($id) ? $id:0, get_client_addr()));
+			array($username, !empty($id) ? $id : 0, get_client_addr())
+		);
 
 		cacti_log('LOGIN FAILED: ' . $realm_name . " Login Failed for user '" . $username . "' from IP Address '" . get_client_addr() . "'.", false, 'AUTH');
 	}
@@ -275,18 +285,24 @@ $selectedTheme = get_selected_theme();
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
+
 <head>
-	<?php html_common_header(api_plugin_hook_function('login_title', __('Login to Cacti')));?>
+	<?php html_common_header(api_plugin_hook_function('login_title', __('Login to Cacti'))); ?>
 </head>
+
 <body class='loginBody'>
+	<div class="loginHeader">
+		<img src="./include/themes/vtidc/images/logo-IDC-2.png" />
+	</div>
 	<div class='loginLeft'></div>
 	<div class='loginCenter'>
-	<div class='loginArea'>
-		<div class='cactiLoginLogo'></div>
-			<legend><?php print __('User Login');?></legend>
-			<form id='login' name='login' method='post' action='<?php print get_current_page();?>'>
+		<div class='loginArea'>
+			<div class='cactiLoginLogo'></div>
+			<legend><?php print __('User Login'); ?></legend>
+			<form id='login' name='login' method='post' action='<?php print get_current_page(); ?>'>
 				<input type='hidden' name='action' value='login'>
-				<?php api_plugin_hook_function('login_before',
+				<?php api_plugin_hook_function(
+					'login_before',
 					array(
 						'error'        => $error,
 						'error_msg'    => $error_msg,
@@ -297,30 +313,27 @@ $selectedTheme = get_selected_theme();
 				);
 				?>
 				<div class='loginTitle'>
-					<p><?php print __('Enter your Username and Password below');?></p>
+					<p><?php print __('Enter your Username and Password below'); ?></p>
 				</div>
 				<div class='cactiLogin'>
-					<table class='cactiLoginTable'>
-						<tr>
-							<td>
-								<label for='login_username'><?php print __('Username');?></label>
-							</td>
-							<td>
-								<input type='text' class='ui-state-default ui-corner-all' id='login_username' name='login_username' value='<?php print html_escape($username); ?>' placeholder='<?php print __esc('Username');?>'>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<label for='login_password'><?php print __('Password');?></label>
-							</td>
-							<td>
-								<input type='password' autocomplete='new-password' class='ui-state-default ui-corner-all' id='login_password' name='login_password' placeholder='********'>
-							</td>
-						</tr>
+					<div class='cactiLoginDiv'>
+						<div class="cactiLoginRow">
+							<!-- <label for='login_username'><?php print __('Username'); ?></label> -->
+							<div class="input-container input-container-username">
+								<input type='text' class='ui-state-default ui-corner-all vidc-input' id='login_username' name='login_username' value='<?php print html_escape($username); ?>' placeholder='<?php echo __esc('Username'); ?>'>
+							</div>
+						</div>
+						<div class="cactiLoginRow">
+							<!-- <label for='login_password'><?php print __('Password'); ?></label> -->
+							<div class="input-container input-container-password">
+								<input type='password' autocomplete='new-password' class='ui-state-default ui-corner-all vidc-input' id='login_password' name='login_password' placeholder='<?php echo __esc('Password'); ?>'>
+							</div>
+						</div>
 						<?php
 						if (read_config_option('auth_method') == '3' || read_config_option('auth_method') == '4') {
 							if (read_config_option('auth_method') == '3') {
-								$realms = api_plugin_hook_function('login_realms',
+								$realms = api_plugin_hook_function(
+									'login_realms',
 									array(
 										'1' => array(
 											'name' => __('Local'),
@@ -343,37 +356,29 @@ $selectedTheme = get_selected_theme();
 								}
 							}
 						?>
-						<tr>
-							<td>
-								<label for='realm'><?php print __('Realm');?></label>
-							</td>
-							<td>
+							<div class="cactiLoginRow">
+								<label for='realm'><?php print __('Realm'); ?></label>
 								<select id='realm' name='realm' class='ui-state-default ui-corner-all'><?php
-									if (cacti_sizeof($realms)) {
-										foreach($realms as $index => $realm) {
-											print "\t\t\t\t\t<option value='" . $index . "'" . ($realm['selected'] ? ' selected="selected"':'') . '>' . html_escape($realm['name']) . "</option>\n";
-										}
-									}
-									?>
+																										if (cacti_sizeof($realms)) {
+																											foreach ($realms as $index => $realm) {
+																												print "\t\t\t\t\t<option value='" . $index . "'" . ($realm['selected'] ? ' selected="selected"' : '') . '>' . html_escape($realm['name']) . "</option>\n";
+																											}
+																										}
+																										?>
 								</select>
-							</td>
-						</tr>
-					<?php } if (read_config_option('auth_cache_enabled') == 'on') { ?>
-						<tr>
-							<td colspan='2'>
-								<input style='vertical-align:-3px;' type='checkbox' id='remember_me' name='remember_me' <?php print (isset($_COOKIE['cacti_remembers']) || !isempty_request_var('remember_me') ? 'checked':'');?>>
-								<label for='remember_me'><?php print __('Keep me signed in');?></label>
-							</td>
-						</tr>
-					<?php } ?>
-						<tr>
-							<td colspan='2'>
-								<input type='submit' class='ui-button ui-corner-all ui-widget' value='<?php print __esc('Login');?>'>
-							</td>
-						</tr>
-					</table>
-				</div>
-			<?php api_plugin_hook('login_after'); ?>
+							</div>
+						<?php }
+						if (read_config_option('auth_cache_enabled') == 'on') { ?>
+							<div class="cactiLoginRow">
+								<input style='vertical-align:-3px;' type='checkbox' id='remember_me' name='remember_me' <?php print(isset($_COOKIE['cacti_remembers']) || !isempty_request_var('remember_me') ? 'checked' : ''); ?>>
+								<label for='remember_me'><?php print __('Keep me signed in'); ?></label>
+							</div>
+						<?php } ?>
+						<div class="cactiLoginRow" style="margin-top:12px;">
+							<input type='submit' class='ui-button ui-corner-all ui-widget vidc-btn vidc-btn-danger' value='<?php print __esc('Login'); ?>'>
+						</div>
+					</div>
+					<?php api_plugin_hook('login_after'); ?>
 			</form>
 			<div class='loginErrors'>
 				<?php
@@ -383,52 +388,52 @@ $selectedTheme = get_selected_theme();
 				?>
 			</div>
 		</div>
-		<div class='versionInfo'><?php print __('Version %s | %s', $version, COPYRIGHT_YEARS_SHORT);?></div>
 	</div>
 	<div class='loginRight'></div>
 	<script type='text/javascript'>
-	var storage = Storages.localStorage;
+		var storage = Storages.localStorage;
 
-	$(function() {
-		if (storage.isSet('user_realm')) {
-			var preferredRealm = storage.get('user_realm');
-		} else {
-			var preferredRealm = null;
-		}
+		$(function() {
+			if (storage.isSet('user_realm')) {
+				var preferredRealm = storage.get('user_realm');
+			} else {
+				var preferredRealm = null;
+			}
 
-		if (preferredRealm == null) {
-			preferredRealm = $('#realm option:selected').val();
-		}
+			if (preferredRealm == null) {
+				preferredRealm = $('#realm option:selected').val();
+			}
 
-		// Restore the preferred realm
-		if ($('#realm').length) {
-			if (preferredRealm !== null) {
-				$('#realm').val(preferredRealm);
-				if ($('#realm').selectmenu('instance') !== undefined) {
-					$('#realm').selectmenu('refresh');
+			// Restore the preferred realm
+			if ($('#realm').length) {
+				if (preferredRealm !== null) {
+					$('#realm').val(preferredRealm);
+					if ($('#realm').selectmenu('instance') !== undefined) {
+						$('#realm').selectmenu('refresh');
+					}
 				}
 			}
-		}
 
-		// Control submit in order to store preferred realm
-		$('#login').submit(function(event) {
-			event.preventDefault();
-			if ($('#realm').length) {
-				storage.set('user_realm', $('#realm').val());
-			}
-			$('#login').off('submit').trigger('submit');
+			// Control submit in order to store preferred realm
+			$('#login').submit(function(event) {
+				event.preventDefault();
+				if ($('#realm').length) {
+					storage.set('user_realm', $('#realm').val());
+				}
+				$('#login').off('submit').trigger('submit');
+			});
+
+			$('body').css('height', $(window).height());
+			$('.loginLeft').css('width', parseInt($(window).width() * 0.33) + 'px');
+			$('.loginRight').css('width', parseInt($(window).width() * 0.33) + 'px');
+			<?php if (empty($username)) { ?>
+				$('#login_username').focus();
+			<?php } else { ?>
+				$('#login_password').focus();
+			<?php } ?>
 		});
-
-		$('body').css('height', $(window).height());
-		$('.loginLeft').css('width',parseInt($(window).width()*0.33)+'px');
-		$('.loginRight').css('width',parseInt($(window).width()*0.33)+'px');
-<?php if (empty($username)) { ?>
-		$('#login_username').focus();
-<?php } else { ?>
-		$('#login_password').focus();
-<?php } ?>
-	});
 	</script>
-	<?php include_once(__DIR__ . '/include/global_session.php');?>
+	<?php include_once(__DIR__ . '/include/global_session.php'); ?>
 </body>
+
 </html>
