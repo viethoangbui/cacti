@@ -1,0 +1,145 @@
+section.host-edit-form{
+    display: flex;
+    gap: 28px;
+}
+
+section.host-edit-form .he-field{
+    display: flex;
+    align-items: center;
+    margin: 14px 0;
+}
+
+section.host-edit-form .he-field:first-child, 
+section.host-edit-form .he-field:nth-child(2){
+  margin-top: 4px;
+}
+
+section.host-edit-form .he-left{
+    flex-grow: 1;
+}
+
+section.host-edit-form .he-right{
+    flex-grow: 1;
+}
+
+.modal-host-edit {
+    position: absolute;
+    z-index: 20;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.modal-host-edit.is-visible {
+    visibility: visible;
+}
+
+.modal-host-edit-overlay {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: hsla(0, 0%, 0%, 0.5);
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.3s, opacity 0.3s;
+}
+
+.modal-host-edit.is-visible .modal-host-edit-overlay {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.modal-host-edit-wrapper {
+  position: absolute;
+  z-index: 9999;
+  top: 1em;
+  left: 25%;
+  width: 60em;
+  margin-left: -16em;
+  background-color: #fff;
+  box-shadow: 0 0 1.5em hsla(0, 0%, 0%, 0.35);
+}
+
+.modal-host-edit-transition {
+  transition: all 0.3s 0.12s;
+  transform: translateY(-10%);
+  opacity: 0;
+}
+
+.modal-host-edit.is-visible .modal-host-edit-transition {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-host-edit-header{
+  padding: 1em;
+}
+
+.modal-host-edit-content{
+  padding: 1em 2em;
+}
+
+.modal-host-edit-header {
+  position: relative;
+  background-color: #fff;
+  box-shadow: 0 1px 2px hsla(0, 0%, 0%, 0.06);
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.modal-host-edit-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.1em;
+  color: #aaa;
+  background: none;
+  border: 0;
+}
+
+.modal-host-edit-close:hover {
+  background-color: #e0e0e0;
+}
+
+.modal-host-edit-heading {
+  font-size: 1.125em;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.modal-host-edit-content > *:first-child {
+  margin-top: 0;
+}
+
+.modal-host-edit-content > *:last-child {
+  margin-bottom: 0;
+}
+
+button.btn-update, button.btn-update:hover{
+  background: #fff;
+  /* border: none; */
+  outline: none;
+  padding: 2px;
+}
+
+.he-right .he-field{
+  justify-content: flex-end;
+}
+
+.he-field label{
+  flex-basis: 80px;
+}
+
+.he-field span, .he-field input{
+  flex-grow: 1;
+}
+
+.he-field label{
+  text-transform: capitalize;
+}

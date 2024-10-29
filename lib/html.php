@@ -1963,8 +1963,19 @@ function html_show_tabs_left() {
 				$id = 'anchor' . $i;
 				$i++;
 			}
+			if(get_selected_theme() === 'vtidc'){
+				if($tab['id'] === 'tab-console-menu'){
+					echo "<li><a id='$id'></a></li>";
+				}else if($tab['id'] === 'tab-console'){
+					continue;
+				}
+				else{
+					print "<li><a id='$id' role='tab' class='lefttab" . (isset($tab['selected']) ? " selected' aria-selected='true'":"' aria-selected='false'") . " href='" . html_escape($tab['url']) . "'><span class='fa glyph_$id'></span><span class='text_$id'>" . html_escape($tab['title']) . "</span></a><a id='menu-$id' class='maintabs-submenu' href='#'><i class='fa fa-angle-down'></i></a></li>";
+				}
 
-			print "<li><a id='$id' role='tab' class='lefttab" . (isset($tab['selected']) ? " selected' aria-selected='true'":"' aria-selected='false'") . " href='" . html_escape($tab['url']) . "'><span class='fa glyph_$id'></span><span class='text_$id'>" . html_escape($tab['title']) . "</span></a><a id='menu-$id' class='maintabs-submenu' href='#'><i class='fa fa-angle-down'></i></a></li>";
+			}else{
+				print "<li><a id='$id' role='tab' class='lefttab" . (isset($tab['selected']) ? " selected' aria-selected='true'":"' aria-selected='false'") . " href='" . html_escape($tab['url']) . "'><span class='fa glyph_$id'></span><span class='text_$id'>" . html_escape($tab['title']) . "</span></a><a id='menu-$id' class='maintabs-submenu' href='#'><i class='fa fa-angle-down'></i></a></li>";
+			}
 		}
 
 		print "<li class='ellipsis maintabs-submenu-ellipsis'><a id='menu-ellipsis' role='tab' aria-selected='false' class='submenu-ellipsis' href='#'><i class='fa fa-angle-down'></i></a></li>";
@@ -2386,7 +2397,6 @@ function html_spikekill_js() {
 			removeRangeFill($(this).attr('data-graph'));
 			$(this).find('.spikekillMenu').menu('destroy').parent().remove();
 		});
-
 		$('.drangefill').unbind().click(function() {
 			dryRunRangeFill($(this).attr('data-graph'));
 			$(this).find('.spikekillMenu').menu('destroy').parent().remove();
@@ -2623,7 +2633,10 @@ function html_common_header($title, $selectedTheme = '') {
 	print get_md5_include_css('include/vendor/flag-icons/css/flag-icons.css');
 	print get_md5_include_css('include/themes/' . $selectedTheme .'/main.css');
 	print get_md5_include_css('include/css/jquery.modal.min.css');
-	print get_md5_include_css('include/css/vidc.css');
+	if(get_selected_theme() === 'vtidc'){
+		echo get_md5_include_css('include/css/vidc.css');
+	}
+	echo get_md5_include_css('include/css/modal-edit-host.css', true);
 	print get_md5_include_js('include/js/screenfull.js', true);
 	print get_md5_include_js('include/js/jquery.js');
 	print get_md5_include_js('include/js/jquery-ui.js');

@@ -305,3 +305,15 @@ function setMenuVisibility() {
 	});
 }
 
+$(document).ready(function() {
+	$('#tab-console-menu').on('click', () => {		
+		$valDisplay = $('.cactiConsoleNavigationArea').css('display');
+
+		if($valDisplay === 'block'){			
+			$('.cactiConsoleNavigationArea').css('display', 'none')
+		}else{
+			$('.cactiConsoleNavigationArea').css('display', 'block')
+		}
+	})
+});
+

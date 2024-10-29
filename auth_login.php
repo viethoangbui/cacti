@@ -291,14 +291,14 @@ $selectedTheme = get_selected_theme();
 </head>
 
 <body class='loginBody'>
-	<div class="loginHeader">
-		<img src="./include/themes/vtidc/images/logo-IDC-2.png" />
-	</div>
+	<?= $selectedTheme !== 'vtidc' ? '' : "<div class='loginHeader'>
+		<img src='./include/themes/vtidc/images/logo-IDC-2.png' />
+	</div>" ?>
 	<div class='loginLeft'></div>
 	<div class='loginCenter'>
 		<div class='loginArea'>
 			<div class='cactiLoginLogo'></div>
-			<legend><?php print __('User Login'); ?></legend>
+			<legend><?php echo __('User Login'); ?></legend>
 			<form id='login' name='login' method='post' action='<?php print get_current_page(); ?>'>
 				<input type='hidden' name='action' value='login'>
 				<?php api_plugin_hook_function(
@@ -316,68 +316,143 @@ $selectedTheme = get_selected_theme();
 					<p><?php print __('Enter your Username and Password below'); ?></p>
 				</div>
 				<div class='cactiLogin'>
-					<div class='cactiLoginDiv'>
-						<div class="cactiLoginRow">
-							<!-- <label for='login_username'><?php print __('Username'); ?></label> -->
-							<div class="input-container input-container-username">
-								<input type='text' class='ui-state-default ui-corner-all vidc-input' id='login_username' name='login_username' value='<?php print html_escape($username); ?>' placeholder='<?php echo __esc('Username'); ?>'>
+					<?php if ($selectedTheme === 'vtidc'): ?>
+						<div class='cactiLoginDiv'>
+							<div class="cactiLoginRow">
+								<div class="input-container input-container-username">
+									<input type='text' class='ui-state-default ui-corner-all vidc-input' id='login_username' name='login_username' value='<?php print html_escape($username); ?>' placeholder='<?php echo __esc('Username'); ?>'>
+								</div>
 							</div>
-						</div>
-						<div class="cactiLoginRow">
-							<!-- <label for='login_password'><?php print __('Password'); ?></label> -->
-							<div class="input-container input-container-password">
-								<input type='password' autocomplete='new-password' class='ui-state-default ui-corner-all vidc-input' id='login_password' name='login_password' placeholder='<?php echo __esc('Password'); ?>'>
+							<div class="cactiLoginRow">
+								<div class="input-container input-container-password">
+									<input type='password' autocomplete='new-password' class='ui-state-default ui-corner-all vidc-input' id='login_password' name='login_password' placeholder='<?php echo __esc('Password'); ?>'>
+								</div>
 							</div>
-						</div>
-						<?php
-						if (read_config_option('auth_method') == '3' || read_config_option('auth_method') == '4') {
-							if (read_config_option('auth_method') == '3') {
-								$realms = api_plugin_hook_function(
-									'login_realms',
-									array(
-										'1' => array(
-											'name' => __('Local'),
-											'selected' => false
-										),
-										'2' => array(
-											'name' => __('LDAP'),
-											'selected' => true
+							<?php
+							if (read_config_option('auth_method') == '3' || read_config_option('auth_method') == '4') {
+								if (read_config_option('auth_method') == '3') {
+									$realms = api_plugin_hook_function(
+										'login_realms',
+										array(
+											'1' => array(
+												'name' => __('Local'),
+												'selected' => false
+											),
+											'2' => array(
+												'name' => __('LDAP'),
+												'selected' => true
+											)
 										)
-									)
-								);
-							} else {
-								$realms = get_auth_realms(true);
-							}
-
-							// try and remember previously selected realm
-							if ($frv_realm && array_key_exists($frv_realm, $realms)) {
-								foreach ($realms as $key => $realm) {
-									$realms[$key]['selected'] = ($frv_realm == $key);
+									);
+								} else {
+									$realms = get_auth_realms(true);
 								}
-							}
-						?>
-							<div class="cactiLoginRow">
-								<label for='realm'><?php print __('Realm'); ?></label>
-								<select id='realm' name='realm' class='ui-state-default ui-corner-all'><?php
-																										if (cacti_sizeof($realms)) {
-																											foreach ($realms as $index => $realm) {
-																												print "\t\t\t\t\t<option value='" . $index . "'" . ($realm['selected'] ? ' selected="selected"' : '') . '>' . html_escape($realm['name']) . "</option>\n";
+
+								// try and remember previously selected realm
+								if ($frv_realm && array_key_exists($frv_realm, $realms)) {
+									foreach ($realms as $key => $realm) {
+										$realms[$key]['selected'] = ($frv_realm == $key);
+									}
+								}
+							?>
+								<div class="cactiLoginRow">
+									<label for='realm'><?php print __('Realm'); ?></label>
+									<select id='realm' name='realm' class='ui-state-default ui-corner-all'><?php
+																											if (cacti_sizeof($realms)) {
+																												foreach ($realms as $index => $realm) {
+																													print "\t\t\t\t\t<option value='" . $index . "'" . ($realm['selected'] ? ' selected="selected"' : '') . '>' . html_escape($realm['name']) . "</option>\n";
+																												}
 																											}
-																										}
-																										?>
-								</select>
+																											?>
+									</select>
+								</div>
+							<?php }
+							if (read_config_option('auth_cache_enabled') == 'on') { ?>
+								<div class="cactiLoginRow">
+									<input style='vertical-align:-3px;' type='checkbox' id='remember_me' name='remember_me' <?php print(isset($_COOKIE['cacti_remembers']) || !isempty_request_var('remember_me') ? 'checked' : ''); ?>>
+									<label for='remember_me'><?php print __('Keep me signed in'); ?></label>
+								</div>
+							<?php } ?>
+							<div class="cactiLoginRow" style="margin-top:12px;">
+								<input type='submit' class='ui-button ui-corner-all ui-widget vidc-btn vidc-btn-danger' value='<?php print __esc('Login'); ?>'>
 							</div>
-						<?php }
-						if (read_config_option('auth_cache_enabled') == 'on') { ?>
-							<div class="cactiLoginRow">
-								<input style='vertical-align:-3px;' type='checkbox' id='remember_me' name='remember_me' <?php print(isset($_COOKIE['cacti_remembers']) || !isempty_request_var('remember_me') ? 'checked' : ''); ?>>
-								<label for='remember_me'><?php print __('Keep me signed in'); ?></label>
-							</div>
-						<?php } ?>
-						<div class="cactiLoginRow" style="margin-top:12px;">
-							<input type='submit' class='ui-button ui-corner-all ui-widget vidc-btn vidc-btn-danger' value='<?php print __esc('Login'); ?>'>
 						</div>
-					</div>
+					<?php else: ?>
+						<table class='cactiLoginTable'>
+							<tr>
+								<td>
+									<label for='login_username'><?php print __('Username'); ?></label>
+								</td>
+								<td>
+									<input type='text' class='ui-state-default ui-corner-all' id='login_username' name='login_username' value='<?php print html_escape($username); ?>' placeholder='<?php print __esc('Username'); ?>'>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for='login_password'><?php print __('Password'); ?></label>
+								</td>
+								<td>
+									<input type='password' autocomplete='new-password' class='ui-state-default ui-corner-all' id='login_password' name='login_password' placeholder='********'>
+								</td>
+							</tr>
+							<?php
+							if (read_config_option('auth_method') == '3' || read_config_option('auth_method') == '4') {
+								if (read_config_option('auth_method') == '3') {
+									$realms = api_plugin_hook_function(
+										'login_realms',
+										array(
+											'1' => array(
+												'name' => __('Local'),
+												'selected' => false
+											),
+											'2' => array(
+												'name' => __('LDAP'),
+												'selected' => true
+											)
+										)
+									);
+								} else {
+									$realms = get_auth_realms(true);
+								}
+
+								// try and remember previously selected realm
+								if ($frv_realm && array_key_exists($frv_realm, $realms)) {
+									foreach ($realms as $key => $realm) {
+										$realms[$key]['selected'] = ($frv_realm == $key);
+									}
+								}
+							?>
+								<tr>
+									<td>
+										<label for='realm'><?php print __('Realm'); ?></label>
+									</td>
+									<td>
+										<select id='realm' name='realm' class='ui-state-default ui-corner-all'><?php
+																												if (cacti_sizeof($realms)) {
+																													foreach ($realms as $index => $realm) {
+																														print "\t\t\t\t\t<option value='" . $index . "'" . ($realm['selected'] ? ' selected="selected"' : '') . '>' . html_escape($realm['name']) . "</option>\n";
+																													}
+																												}
+																												?>
+										</select>
+									</td>
+								</tr>
+							<?php }
+							if (read_config_option('auth_cache_enabled') == 'on') { ?>
+								<tr>
+									<td colspan='2'>
+										<input style='vertical-align:-3px;' type='checkbox' id='remember_me' name='remember_me' <?php print(isset($_COOKIE['cacti_remembers']) || !isempty_request_var('remember_me') ? 'checked' : ''); ?>>
+										<label for='remember_me'><?php print __('Keep me signed in'); ?></label>
+									</td>
+								</tr>
+							<?php } ?>
+							<tr>
+								<td colspan='2'>
+									<input type='submit' class='ui-button ui-corner-all ui-widget' value='<?php print __esc('Login'); ?>'>
+								</td>
+							</tr>
+						</table>
+					<?php endif; ?>
 					<?php api_plugin_hook('login_after'); ?>
 			</form>
 			<div class='loginErrors'>
@@ -390,6 +465,25 @@ $selectedTheme = get_selected_theme();
 		</div>
 	</div>
 	<div class='loginRight'></div>
+	<?php if($selectedTheme === 'vtidc'):?>
+	<footer id="vidc-footer">
+		<section class="footer-left">
+			<p>
+				© Copyright Viettel-CHT Ltd.Co.
+			</p>
+		</section>
+		<section class="footer-right">
+			<p>
+				Hotline:
+				<span>1800 8088</span>
+			</p>
+			<p>
+				Email:
+				<span>support@viettelidc.com.vn</span>
+			</p>
+		</section>
+	</footer>
+	<?php endif; ?>
 	<script type='text/javascript'>
 		var storage = Storages.localStorage;
 

@@ -27,13 +27,15 @@
     width: 100%;
 }
 
-.vidc-btn-danger{
+.vidc-btn-danger, .vidc-btn-danger:hover{
     background: rgb(238, 0, 51);
     color: #fff;
+    outline: none;
+    border: none;
 }
 
 .vidc-btn-danger:hover{
-    background: initial;
+    text-shadow: 0.2px 0.2px #e0e0e0;
 }
 
 .cactiLoginLogo{
@@ -57,6 +59,7 @@
 .loginBody .loginHeader{
     width: 100%;
     background-color: #fff;
+    box-shadow: 0 4px 6px rgba(37, 37, 37, 0.1);
 }
 
 .loginBody .loginHeader img{
@@ -76,9 +79,9 @@
 }
 
 .loginArea .loginTitle {
-    color: #b8254f;
+    color: #c03d5d;
     font-weight: 750;
-    font-size: 7pt;
+    font-size: 8pt;
     text-align: center;
     margin-bottom: 10px;
 }
@@ -90,6 +93,7 @@
 .input-container {
     position: relative;
     display: inline-block;
+    width: 100%;
 }
 
 .input-container::before {
@@ -114,7 +118,48 @@
 .input-container input {
     padding-left: 40px;
     height: 30px;
-    width: 150%;
+    width: 88%;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+#vidc-footer{
+    display: block;
+    position: fixed;
+    width: 100wh;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    color: #909090;
+    font-style: italic;
+}
+
+#vidc-footer .footer-right{
+    display: flex;
+    gap: 8px;
+}
+
+#vidc-footer span{
+    color: #c03d5d;
+}
+
+.cactiLoginRow>label[for=realm-button]{
+    display: none;
+}
+
+.cactiLoginRow:has(#realm){
+    margin-bottom: 8px;
+}
+
+.loginCenter:has(#realm){
+    padding-bottom: 30px;
+}
+
+#realm + span{
+    width: 95% !important;
 }

@@ -174,8 +174,17 @@ switch (get_request_var('action')) {
 	case 'ajax_device_type':
 		get_device_types();
 		break;
+	case 'ajax_supplier':
+		get_suppliers();
+		break;
 	case 'ajax_model':
 		get_model();
+		break;
+	case 'ajax_site':
+		get_site();
+		break;
+	case 'host_update':
+		host_update();
 		break;
 	default:
 		top_header();
@@ -280,9 +289,22 @@ function get_site_locations()
 	print json_encode($return);
 }
 
+function get_suppliers()
+{
+	$noneItem = ['id' => 'None', 'name' => 'None'];
+	$suppliers = db_fetch_assoc(
+		'SELECT name, id
+				FROM suppliers
+				WHERE is_enable = 1'
+	);
+
+	array_unshift($suppliers, $noneItem);
+	echo json_encode($suppliers);
+}
+
 function get_device_types()
 {
-	$noneItem = ['id' => 'None','name'=> 'None'];
+	$noneItem = ['id' => 'None', 'name' => 'None'];
 	if (isempty_request_var('supplier_id')) {
 		echo json_encode([$noneItem]);
 	} else {
@@ -302,7 +324,7 @@ function get_device_types()
 
 function get_model()
 {
-	$noneItem = ['id' => 'None','name'=> 'None'];
+	$noneItem = ['id' => 'None', 'name' => 'None'];
 	if (isempty_request_var('device_type_id')) {
 		echo json_encode([$noneItem]);
 	} else {
@@ -321,6 +343,22 @@ function get_model()
 	}
 }
 
+function get_site()
+{
+	$sites = db_fetch_assoc(
+		'SELECT name, id
+				FROM sites'
+	);
+
+	echo json_encode($sites);
+}
+
+
+function host_update()
+{
+	$data = json_decode(file_get_contents('php://input'), true);
+	var_dump($data,$_POST);
+}
 /* --------------------------
     The Save Function
    -------------------------- */
@@ -1536,6 +1574,93 @@ function device_javascript()
 <?php
 }
 
+function handleEdit_javascript($hosts)
+{
+?>
+	<script src='./include/js/host-custom.js'></script>
+	<script type='text/javascript'>
+		const hosts = <?= json_encode($hosts) ?>;
+
+		$(document).ready(function() {
+			document.querySelectorAll("#host2_child tr").forEach(row => {
+				row.addEventListener("click", function() {
+
+					row.classList.toggle("selected");
+				});
+			});
+
+			$('.modal-host-edit-toggle').on('click', function(e) {
+				e.preventDefault();
+				$('.modal-host-edit').toggleClass('is-visible');
+			});
+
+			$('.host-editor').on('click', (event) => {
+				$('.modal-host-edit').toggleClass('is-visible');
+
+				if (hosts?.length > 0) {
+					const hostId = event.currentTarget.id
+
+					let host = hosts.find((item) => item.id == hostId)
+
+					fetchUrlData(
+						`${urlPath}host.php?action=ajax_supplier`,
+						'#supplier',
+						host.supplier_id,
+					)
+
+					fetchUrlData(
+						`${urlPath}host.php?action=ajax_device_type&supplier_id=${host?.supplier_id}`,
+						'#device-type',
+						host.loaithietbi,
+					)
+
+					fetchUrlData(
+						`${urlPath}host.php?action=ajax_model&device_type_id=${host?.loaithietbi}`,
+						'#model',
+						host.model,
+					)
+
+					fetchUrlData(
+						`${urlPath}host.php?action=ajax_site`,
+						'#site',
+						host.site_id,
+					)
+
+					$('#description').val(host.description)
+					$('#ip').val(host.hostname)
+					$('#community').val(host.snmp_community)
+					$('#bk-method').val(host.bk_method).selectmenu("refresh")
+					$('#status').val(host.status).selectmenu("refresh")
+					$('#login').val(host.login)
+					$('#en-level').val(host.en_level)
+					$('#config').val(host.config).selectmenu("refresh")
+					$('#authen').val(host.authen).selectmenu("refresh")
+					$('#backup').val(host.backup).selectmenu("refresh")
+					$('#password').val(host.password)
+					$('#repeat-password').val(host.password)
+				}
+			})
+
+			$('#host-form-update').on('submit', function(e) {
+				e.preventDefault()
+				const formData = {};
+
+				$.each($(this).serializeArray(), function(_, field) {
+					formData[field.name] = field.value;
+				});
+
+				$.post(`${urlPath}host.php?action=host_update`,{
+					...formData,
+					__csrf_magic: csrfMagicToken
+				}).done(function(data) {
+					console.log('data: ', data);
+				})
+			})
+		})
+	</script>
+<?php
+}
+
 function host_validate_vars()
 {
 	/* ================= input validation and session storage ================= */
@@ -1716,8 +1841,8 @@ function get_device_records(&$total_rows, $rows)
 
 function host()
 {
+	$hosts = [];
 	global $device_actions, $item_rows, $config;
-
 	if ((!empty($_SESSION['sess_host_status'])) && (!isempty_request_var('host_status'))) {
 		if ($_SESSION['sess_host_status'] != get_nfilter_request_var('host_status')) {
 			set_request_var('page', '1');
@@ -1954,7 +2079,7 @@ function host()
 			</script>
 		</td>
 	</tr>
-<?php
+	<?php
 
 	html_end_box();
 
@@ -2110,9 +2235,9 @@ function host()
 			if (empty($host['data_sources'])) {
 				$host['data_sources'] = 0;
 			}
-
 			form_alternate_row('line' . $host['id'], true);
-			form_selectable_cell(filter_value($host['description'], get_request_var('filter'), 'host.php?action=edit&id=' . $host['id']), $host['id']);
+			form_selectable_cell("<span class=\"host-editor\" id=\"{$host['id']}\">{$host['description']} 
+				<a><svg xmlns='http://www.w3.org/2000/svg' height='18px' viewBox='0 -960 960 960' width='18px' fill='#EE0033'><path d='M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z'/></svg></a>", $host['id']);
 			form_selectable_cell(filter_value($host['hostname'], get_request_var('filter')), $host['id']);
 			form_selectable_cell(filter_value($host['snmp_community'], get_request_var('filter')), $host['id']);
 			form_selectable_cell(filter_value($host['supplier_name'], get_request_var('filter')), $host['id']);
@@ -2150,7 +2275,150 @@ function host()
 	draw_actions_dropdown($device_actions);
 
 	form_end();
-
 	api_plugin_hook('device_table_bottom');
+
+	handleEdit_javascript($hosts);
+	renderModal();
 }
+
+function renderModal()
+{
+	?>
+	<div class="modal-host-edit">
+		<div class="modal-host-edit-overlay modal-host-edit-toggle"></div>
+		<div class="modal-host-edit-wrapper modal-host-edit-transition">
+			<div class="modal-host-edit-header">
+				<button class="modal-host-edit-close modal-host-edit-toggle">
+					<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EE0033">
+						<path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+					</svg>
+				</button>
+				<h2 class="modal-host-edit-heading">Edit device</h2>
+			</div>
+
+			<div class="modal-host-edit-body">
+				<div class="modal-host-edit-content">
+					<form id="host-form-update">
+						<section class="host-edit-form">
+							<div class="he-left">
+								<div class="he-field">
+									<label for="supplier" style="color:#EE0033">supplier</label>
+									<select id="supplier" name="supplier_id"></select>
+								</div>
+
+								<div class="he-field">
+									<label for="model" style="color:#EE0033">model</label>
+									<select id="model" name="model"></select>
+								</div>
+
+								<div class="he-field">
+									<label for="description">description</label>
+									<input id="description" name="model" type="text" />
+								</div>
+
+								<div class="he-field">
+									<label for="community">community</label>
+									<input id="community" name="snmp_community" type="text" />
+								</div>
+
+								<div class="he-field">
+									<label for="bk-method">Bk method</label>
+									<select id="bk-method" name="bk_method">
+										<option value="ssh">SSH</option>
+										<option value="telnet">TALNET</option>
+									</select>
+								</div>
+
+								<div class="he-field">
+									<label for="status">Status</label>
+									<select id="status" name="status">
+										<option value="force">Hiệu lực</option>
+										<option value="force_not">Hết hiệu lực</option>
+									</select>
+								</div>
+
+								<div class="he-field">
+									<label for="login">Login</label>
+									<input id="login" name="login" type="text" />
+								</div>
+
+								<div class="he-field">
+									<label for="en-level">en level</label>
+									<input id="en-level" name="en-level" type="text" />
+								</div>
+							</div>
+
+							<div class="he-right">
+								<div class="he-field">
+									<label for="device-type" style="color:#EE0033">Device type</label>
+									<select id="device-type" name="loaithietbi"></select>
+								</div>
+
+								<div class="he-field">
+									<label for="site" style="color:#EE0033">Site</label>
+									<select id="site" name="site_id"></select>
+								</div>
+
+								<div class="he-field">
+									<label for="ip">Ip device</label>
+									<input id="ip" name="hostname" type="text" />
+								</div>
+
+								<div class="he-field">
+									<label for="config">Config</label>
+									<select id="config" name="bk_method">
+										<option value="ssh">SSH</option>
+										<option value="telnet">TALNET</option>
+									</select>
+								</div>
+
+								<div class="he-field">
+									<label for="authen">Authen</label>
+									<select id="authen" name="authen">
+										<option value="local">LOCAL</option>
+										<option value="ldap">LDAP</option>
+									</select>
+								</div>
+
+								<div class="he-field">
+									<label for="backup">backup</label>
+									<select id="backup" name="backup">
+										<option value="1">YES</option>
+										<option value="0">NO</option>
+									</select>
+								</div>
+
+								<div class="he-field">
+									<label for="password">password</label>
+									<input id="password" name="password" type="password" />
+								</div>
+
+								<div class="he-field">
+									<label for="repeat-password">en password</label>
+									<input id="repeat-password" name="re-password" type="password" />
+								</div>
+							</div>
+						</section>
+						<div>
+							<div style="width: fit-content;margin:0 auto;">
+								<button class="modal-host-edit-toggle btn-update btn-update-discard">
+									<svg xmlns="http://www.w3.org/2000/svg" height="26px" viewBox="0 -960 960 960" width="26px" fill="#EE0033">
+										<path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+									</svg>
+								</button>
+								<button class="btn-update btn-update-submit" type="submit">
+									<svg xmlns="http://www.w3.org/2000/svg" height="26px" viewBox="0 -960 960 960" width="26px" fill="#EE0033">
+										<path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" />
+									</svg>
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+<?php
+}
+
 ?>

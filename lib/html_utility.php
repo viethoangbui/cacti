@@ -244,7 +244,6 @@ function form_selectable_cell($contents, $id, $width = '', $style_or_class = '',
 	} else {
 		$wrapper = $contents;
 	}
-
 	print "\t<td " . $output . ">" . $wrapper . "</td>\n";
 }
 

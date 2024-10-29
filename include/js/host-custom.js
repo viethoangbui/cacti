@@ -1,12 +1,12 @@
 function fetchData(url, callback) {
     $.get(url)
-        .done(function (data) {            
+        .done(function (data) {
             if (data.charAt(0) !== '[') {
                 return;
             }
 
             const dataArr = JSON.parse(data);
-            
+
 
             if (typeof dataArr === 'object' && !Array.isArray(dataArr) && dataArr !== null) {
                 return;
@@ -48,10 +48,25 @@ function getDetailHost(supplierId, deviceId, modelId) {
     const deviceTypeUrl = `${urlPath}host.php?action=ajax_device_type&supplier_id=${supplierId}`;
     fetchData(deviceTypeUrl, (dataArr) => {
         populateSelect('device_type_id', dataArr, deviceId);
-        
+
         const modelUrl = `${urlPath}host.php?action=ajax_model&device_type_id=${deviceId}`;
         fetchData(modelUrl, (modelDataArr) => populateSelect('model_id', modelDataArr, modelId));
     });
+}
+
+
+function fetchUrlData(url, select, valueSelected) {
+    fetchData(
+        url,
+        (dataArr) => {
+            dataArr.forEach(item => {
+                $(select).append(new Option(item.name, item.id));
+            })
+
+            $(select).selectmenu()
+            $(select).val(valueSelected).selectmenu("refresh")
+        }
+    )
 }
 
 $(document).ready(function () {
