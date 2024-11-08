@@ -21,7 +21,6 @@
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
-
 function get_graph_template_details($local_graph_id) {
 	global $config;
 
@@ -108,3 +107,91 @@ function get_graph_template_details($local_graph_id) {
 	}
 }
 
+function unixToDatetime($timestamp) {
+    // Create DateTime object from Unix timestamp
+    $date = new DateTime("@$timestamp", new DateTimeZone('UTC')); // Start with UTC
+    // Set the desired time zone
+    $date->setTimezone(new DateTimeZone('Asia/Ho_Chi_Minh'));
+    // Format the date as 'Y-m-d H:i:s'
+    $formattedDate = $date->format('Y-m-d H:i:s');
+    // If needed, escape colons (though typically not required)
+    $formattedDatetime = str_replace(':', '\\:', $formattedDate);
+    return $formattedDatetime;
+}
+
+function graphSource($listSources, $title) {
+	$start = time() - (4*86400);
+	$end   = time();
+
+	$execs = [];
+	$execs[] = ' graphv';
+	$execs[] = ' - ';
+	$execs[] = '--imgformat=SVG ';
+	$execs[] = '--width=700 ';
+	$execs[] = '--base=1000 ';
+	$execs[] = '--height=200 ';
+	$execs[] = '--interlaced ';
+	$execs[] = '--title "'.$title.'"';
+	$execs[] = '-v "Network Usage" ';
+	$execs[] = '--font TITLE:11:"Verdana, Arial, Helvetica, sans-serif,Bold" ';
+
+	$cdefA = "CDEF:a=";
+	$cdefB = "CDEF:b=";
+	for( $i = 0; $i < count($listSources); $i++){                 
+		$execs[] = "DEF:avgin_" . $i . "=" . $listSources[$i] . ":traffic_in:AVERAGE";
+		$execs[] = "DEF:avgout_" . $i . "=" . $listSources[$i] . ":traffic_out:AVERAGE";
+		$cdefA .= "avgin_" . $i . ",UN,0,avgin_" . $i . ",IF,";
+		$cdefB .= "avgout_" . $i . ",UN,0,avgout_" . $i . ",IF,";
+		if ($i > 0) {
+			$cdefA .= "+,";
+			$cdefB .= "+,";
+		}
+	}
+	$execs[]= $cdefA;
+	$execs[]= $cdefB;
+	
+	$execs[] = 'CDEF:in=a,8,*';
+	$execs[] = 'CDEF:out=b,8,*';
+	$execs[] = 'CDEF:95per=in,out,GT,in,out,IF';
+	$execs[] = 'VDEF:95th=95per,95,PERCENT';
+
+	$execs[] = 'COMMENT:"From '.unixToDatetime($start).' To '.unixToDatetime($end).'\c" COMMENT:" \n" ';
+
+	$execs[] = 'AREA:in#00FF00:" IN"';
+	$execs[] = 'COMMENT:"Max\:"';
+	$execs[] = 'GPRINT:in:MAX:"%6.2lf %S"';
+	$execs[] = 'COMMENT:"Avg\:"';
+	$execs[] = 'GPRINT:in:AVERAGE:"%6.2lf %S"';
+	$execs[] = 'COMMENT:"Last\:"';
+	$execs[] = 'GPRINT:in:LAST:"%6.2lf %S\n"';
+
+	$execs[] = 'LINE1:out#0000FF:" OUT" COMMENT:"Max\:"';
+	$execs[] = 'GPRINT:out:MAX:"%6.2lf %S"';
+	$execs[] = 'COMMENT:"Avg\:"';
+	$execs[] = 'GPRINT:out:AVERAGE:"%6.2lf %S"';
+	$execs[] = 'COMMENT:"Last\:"';
+	$execs[] = 'GPRINT:out:LAST:"%6.2lf %S\n"';
+
+	$execs[] = 'LINE:95th#CF000F:" 95th Percentile"';
+	$execs[] = 'GPRINT:95th:"%6.2lf %S\n"';
+	//$execs[] = 'COMMENT:"Unit\: bps"';
+	$execs[] = '--font AXIS:8:"Arial" ';
+	$execs[] = '--font LEGEND:8:"Courier" ';
+	$execs[] = '--font ';
+	$execs[] = 'UNIT:8:"Arial" ';
+	$execs[] = '--font WATERMARK:8:"Arial" ';
+	$execs[] = '--slope-mode ';
+	$execs[] = '--watermark "VIETTEL IDC" ';
+
+	$execs[] = '--start='.$start;
+	$execs[] = '--end='.$end;
+
+	$command =  implode(' ', $execs);
+	return $command ;
+}
+
+
+function view_Graph($strRRD){
+	$output = rrdtool_execute($strRRD, false, '1', false);
+	return $output;
+}

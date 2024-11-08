@@ -292,6 +292,12 @@ function html_graph_area(&$graph_array, $no_graphs_message = '', $extra_url_args
 	global $config;
 
 	$i = 0; $k = 0; $j = 0;
+	$graph_array[] = $graph_array[0];
+	$graph_array[] = $graph_array[0];
+	$graph_array[] = $graph_array[0];
+	$graph_array[] = $graph_array[0];
+	$graph_array[] = $graph_array[0];
+	$graph_array[] = $graph_array[0];
 
 	$num_graphs = cacti_sizeof($graph_array);
 
@@ -2663,6 +2669,7 @@ function html_common_header($title, $selectedTheme = '') {
 	print get_md5_include_js('include/js/pace.js');
 	print get_md5_include_js('include/js/purify.js');
 	print get_md5_include_js('include/realtime.js');
+	print get_md5_include_js('include/js/notify.min.js');
 	print get_md5_include_js('include/themes/' . $selectedTheme .'/main.js');
 
 	if (isset($path2calendar) && file_exists($path2calendar)) {

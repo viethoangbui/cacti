@@ -63,18 +63,18 @@ function themeReady() {
 	$('.cactiConsoleNavigationArea').find('#menu').appendTo($('.cactiConsoleNavigationArea').find('#navigation'));
 	$('.cactiConsoleNavigationArea').find('#navigation > table').remove();
 
-	$('.maintabs nav ul li a.lefttab').each( function() {
+	$('.maintabs nav ul li a.lefttab').each(function () {
 		id = $(this).attr('id');
 
-		if (id == 'tab-graphs' && $(this).parent().hasClass('maintabs-has-submenu') == 0 ) {
+		if (id == 'tab-graphs' && $(this).parent().hasClass('maintabs-has-submenu') == 0) {
 			$(this).parent().addClass('maintabs-has-submenu');
 			$('<div class="dropdownMenu">'
-				+'<ul id="submenu-tab-graphs" class="submenuoptions" style="display:none;">'
-					+'<li><a id="tab-graphs-tree-view" href="'+urlPath+'graph_view.php?action=tree">'+treeView+'</a></li>'
-					+'<li><a id="tab-graphs-list-view" href="'+urlPath+'graph_view.php?action=list">'+listView+'</a></li>'
-					+'<li><a id="tab-graphs-pre_view" href="'+urlPath+'graph_view.php?action=preview">'+previewView+'</a></li>'
-				+'</ul>'
-			+'</div>').appendTo('body');
+				+ '<ul id="submenu-tab-graphs" class="submenuoptions" style="display:none;">'
+				+ '<li><a id="tab-graphs-tree-view" href="' + urlPath + 'graph_view.php?action=tree">' + treeView + '</a></li>'
+				+ '<li><a id="tab-graphs-list-view" href="' + urlPath + 'graph_view.php?action=list">' + listView + '</a></li>'
+				+ '<li><a id="tab-graphs-pre_view" href="' + urlPath + 'graph_view.php?action=preview">' + previewView + '</a></li>'
+				+ '</ul>'
+				+ '</div>').appendTo('body');
 		}
 	});
 
@@ -85,24 +85,24 @@ function themeReady() {
 		$('#userCommunity').remove();
 		$('.menuHr').remove();
 		$('<div class="maintabs usertabs">'
-			+'<nav><ul>'
-				+'<li><a id="menu-user-help" class="usertabs-submenu" href="#"><i class="fa fa-question"></i></a></li>'
-				+'<li class="action-icon-user"><a class="pic" href="#"><i class="fa fa-user"></i></a></li>'
-			+'</ul></nav>'
-		+'</div>').insertAfter('.maintabs');
+			+ '<nav><ul>'
+			+ '<li><a id="menu-user-help" class="usertabs-submenu" href="#"><i class="fa fa-question"></i></a></li>'
+			+ '<li class="action-icon-user"><a class="pic" href="#"><i class="fa fa-user"></i></a></li>'
+			+ '</ul></nav>'
+			+ '</div>').insertAfter('.maintabs');
 
 		$('<div class="dropdownMenu">'
-			+'<ul id="submenu-user-help" class="submenuoptions right" style="display:none;">'
-				+'<li><a href="https://www.cacti.net" target="_blank" rel="noopener"><span>'+cactiHome+'</span></a></li>'
-				+'<li><a href="https://github.com/cacti" target="_blank rel="noopener""><span>'+cactiProjectPage+'</span></a></li>'
-				+'<li><hr class="menu"></li>'
-				+'<li><a href="https://forums.cacti.net/" target="_blank" rel="noopener"><span>'+cactiCommunityForum+'</span></a></li>'
-				+'<li><a href="https://github.com/Cacti/documentation/blob/develop/README.md" target="_blank" rel="noopener"><span>'+cactiDocumentation+'</span></a></li>'
-				+'<li><hr class="menu"></li>'
-				+'<li><a href="https://github.com/Cacti/cacti/issues/new" target="_blank" rel="noopener"><span>'+reportABug+'</span></a></li>'
-				+'<li><a href="'+urlPath+'about.php"><span>'+aboutCacti+'</span></a></li>'
-			+'</ul>'
-		+'</div>').appendTo('body');
+			+ '<ul id="submenu-user-help" class="submenuoptions right" style="display:none;">'
+			+ '<li><a href="https://www.cacti.net" target="_blank" rel="noopener"><span>' + cactiHome + '</span></a></li>'
+			+ '<li><a href="https://github.com/cacti" target="_blank rel="noopener""><span>' + cactiProjectPage + '</span></a></li>'
+			+ '<li><hr class="menu"></li>'
+			+ '<li><a href="https://forums.cacti.net/" target="_blank" rel="noopener"><span>' + cactiCommunityForum + '</span></a></li>'
+			+ '<li><a href="https://github.com/Cacti/documentation/blob/develop/README.md" target="_blank" rel="noopener"><span>' + cactiDocumentation + '</span></a></li>'
+			+ '<li><hr class="menu"></li>'
+			+ '<li><a href="https://github.com/Cacti/cacti/issues/new" target="_blank" rel="noopener"><span>' + reportABug + '</span></a></li>'
+			+ '<li><a href="' + urlPath + 'about.php"><span>' + aboutCacti + '</span></a></li>'
+			+ '</ul>'
+			+ '</div>').appendTo('body');
 	}
 
 	ajaxAnchors();
@@ -112,7 +112,7 @@ function themeReady() {
 
 	$(window).trigger('resize');
 
-	$('.action-icon-user').unbind().click(function(event) {
+	$('.action-icon-user').unbind().click(function (event) {
 		event.preventDefault();
 
 		if ($('.menuoptions').is(':visible') === false) {
@@ -130,9 +130,9 @@ function themeReady() {
 	$('.tableHeader th').has('i.fa-sort-up').addClass('tableHeaderColumnSelected');
 	$('.tableHeader th').has('i.fa-sort-down').addClass('tableHeaderColumnSelected');
 	$('.tableHeader th').has('i.fa-sort').hover(
-		function() {
+		function () {
 			$(this).addClass('tableHeaderColumnHover');
-		}, function() {
+		}, function () {
 			$(this).removeClass('tableHeaderColumnHover');
 		}
 	);
@@ -143,13 +143,13 @@ function themeReady() {
 
 	$('select.colordropdown').dropcolor();
 
-	$('select').not('.colordropdown').each(function() {
+	$('select').not('.colordropdown').each(function () {
 		if ($(this).prop('multiple') != true) {
-			$(this).each(function() {
+			$(this).each(function () {
 				id = $(this).attr('id');
 
 				$(this).selectmenu({
-					change: function(event, ui) {
+					change: function (event, ui) {
 						$(this).val(ui.item.value).change();
 					},
 					position: {
@@ -160,7 +160,7 @@ function themeReady() {
 					width: 'auto'
 				});
 
-				$('#'+id+'-menu').css('max-height', '250px');
+				$('#' + id + '-menu').css('max-height', '250px');
 			});
 		} else {
 			$(this).addClass('ui-state-default ui-corner-all');
@@ -168,10 +168,10 @@ function themeReady() {
 	});
 
 	$('#host').unbind().autocomplete({
-		source: pageName+'?action=ajax_hosts',
+		source: pageName + '?action=ajax_hosts',
 		autoFocus: true,
 		minLength: 0,
-		select: function(event,ui) {
+		select: function (event, ui) {
 			$('#host_id').val(ui.item.id);
 			callBack = $('#call_back').val();
 			if (callBack != 'undefined') {
@@ -189,43 +189,43 @@ function themeReady() {
 	}).addClass('ui-state-default ui-selectmenu-text').css('border', 'none').css('background-color', 'transparent');
 
 	$('#host_click').css('z-index', '4');
-	$('#host_wrapper').unbind().dblclick(function() {
+	$('#host_wrapper').unbind().dblclick(function () {
 		hostOpen = false;
 		clearTimeout(hostTimer);
 		clearTimeout(clickTimeout);
 		$('#host').autocomplete('close').select();
-	}).click(function() {
+	}).click(function () {
 		if (hostOpen) {
 			$('#host').autocomplete('close');
 			clearTimeout(hostTimer);
 			hostOpen = false;
 		} else {
-			clickTimeout = setTimeout(function() {
+			clickTimeout = setTimeout(function () {
 				$('#host').autocomplete('search', '');
 				clearTimeout(hostTimer);
 				hostOpen = true;
 			}, 200);
 		}
 		$('#host').select();
-	}).on('mouseenter', function() {
+	}).on('mouseenter', function () {
 		$(this).addClass('ui-state-hover');
 		$('input#host').addClass('ui-state-hover');
-	}).on('mouseleave', function() {
+	}).on('mouseleave', function () {
 		$(this).removeClass('ui-state-hover');
 		$('#host').removeClass('ui-state-hover');
-		hostTimer = setTimeout(function() { $('#host').autocomplete('close'); }, 800);
+		hostTimer = setTimeout(function () { $('#host').autocomplete('close'); }, 800);
 		hostOpen = false;
 	});
 
 	var hostPrefix = '';
-	$('#host').autocomplete('widget').each(function() {
-		hostPrefix=$(this).attr('id');
+	$('#host').autocomplete('widget').each(function () {
+		hostPrefix = $(this).attr('id');
 
 		if (hostPrefix != '') {
-			$('ul[id="'+hostPrefix+'"]').on('mouseenter', function() {
+			$('ul[id="' + hostPrefix + '"]').on('mouseenter', function () {
 				clearTimeout(hostTimer);
-			}).on('mouseleave', function() {
-				hostTimer = setTimeout(function() { $('#host').autocomplete('close'); }, 800);
+			}).on('mouseleave', function () {
+				hostTimer = setTimeout(function () { $('#host').autocomplete('close'); }, 800);
 				$(this).removeClass('ui-state-hover');
 				$('input#host').removeClass('ui-state-hover');
 			});
@@ -241,11 +241,11 @@ function themeReady() {
 }
 
 function setMenuVisibility() {
-	storage=Storages.localStorage;
+	storage = Storages.localStorage;
 
 	// Initialize the navigation settings
 	// This will setup the initial visibility of the menu
-	$('li.menuitem').each(function() {
+	$('li.menuitem').each(function () {
 		var id = $(this).attr('id');
 
 		if (storage.isSet(id)) {
@@ -275,18 +275,18 @@ function setMenuVisibility() {
 	});
 
 	// Function to give life to the Navigation pane
-	$('#nav li:has(ul) a.active').unbind().click(function(event) {
+	$('#nav li:has(ul) a.active').unbind().click(function (event) {
 		event.preventDefault();
 
 		id = $(this).closest('.menuitem').attr('id');
 
 		if ($(this).next().is(':visible')) {
 			$(this).next('ul').attr('aria-hidden', 'true').attr('aria-expanded', 'false');
-			$(this).next().slideUp( { duration: 200, easing: 'swing' } );
+			$(this).next().slideUp({ duration: 200, easing: 'swing' });
 			storage.set(id, 'collapsed');
 		} else {
 			$(this).next('ul').attr('aria-hidden', 'false').attr('aria-expanded', 'true');
-			$(this).next().slideToggle( { duration: 200, easing: 'swing' } );
+			$(this).next().slideToggle({ duration: 200, easing: 'swing' });
 			if ($(this).next().is(':visible')) {
 				storage.set($(this).closest('.menuitem').attr('id'), 'active');
 			} else {
@@ -294,26 +294,54 @@ function setMenuVisibility() {
 			}
 		}
 
-		$('li.menuitem').not('#'+id).each(function() {
+		$('li.menuitem').not('#' + id).each(function () {
 			text = $(this).attr('id');
-			id   = $(this).attr('id');
+			id = $(this).attr('id');
 
 			$(this).find('ul').attr('aria-hidden', 'true').attr('aria-expanded', 'false');
-			$(this).find('ul').slideUp( { duration: 200, easing: 'swing' } );
+			$(this).find('ul').slideUp({ duration: 200, easing: 'swing' });
 			storage.set($(this).attr('id'), 'collapsed');
 		});
 	});
 }
 
-$(document).ready(function() {
-	$('#tab-console-menu').on('click', () => {		
-		$valDisplay = $('.cactiConsoleNavigationArea').css('display');
+function playNotificationSound() {
+    const audio = new Audio(window.location.origin + "/cacti/include/sounds/notification.mp3");
+    audio.play();
+}
 
-		if($valDisplay === 'block'){			
-			$('.cactiConsoleNavigationArea').css('display', 'none')
-		}else{
-			$('.cactiConsoleNavigationArea').css('display', 'block')
+function showNotificationWithClose(message, type = "info") {
+    $.notify(
+        message,{
+        className: type,
+		position: "right bottom",
+		autoHideDelay: 60000,
+		showAnimation: 'slideDown',
+		hideAnimation: 'slideUp',
+		animationType:"drop",
+		closeClick: true
+    })
+
+	playNotificationSound()
+}
+
+$(document).ready(function () {
+	$('#tab-console-menu').on('click', () => {
+		$valDisplay = $('.cactiConsoleNavigationArea, .cactiTreeNavigationArea').css('display');
+
+		if ($valDisplay === 'block') {
+			$('.cactiConsoleNavigationArea, .cactiTreeNavigationArea').css('display', 'none')
+		} else {
+			$('.cactiConsoleNavigationArea, .cactiTreeNavigationArea').css('display', 'block')
 		}
 	})
+
+	let source = new EventSource("demo_see.php");
+	source.onmessage = function (event) {
+		showNotificationWithClose(event.data, 'error')
+	};
 });
+
+
+
 

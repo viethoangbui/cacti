@@ -36,7 +36,15 @@ if (!isset_request_var('headercontent')) {?>
 <body>
 	<a class='skip-link' href='#main' style='display:none'>Skip to main</a>
 	<div id='cactiPageHead' class='cactiPageHead' role='banner'>
-		<div id='tabs'><?php html_show_tabs_left();?></div>
+		<div id='tabs'>
+			<div id='vtidc-home-left'>
+				<a id='vtidc-homepage' href="<?= $config['url_path'] . 'index.php'?>"></a>
+				<a id='tab-console-menu'></a>
+			</div>
+			<div id="vtidc-menu-right">
+				<?php html_show_tabs_left(); ?>
+			</div>
+		</div>
 		<div class='cactiGraphHeaderBackground'><div id='gtabs'><?php print html_graph_tabs_right();?></div></div>
 		<div class='cactiConsolePageHeadBackdrop' style='display:none;'></div>
 	</div>

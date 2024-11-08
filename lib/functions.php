@@ -780,12 +780,14 @@ function get_selected_theme() {
 
 	// default to system selected theme
 	$theme = read_config_option('selected_theme');
+	// var_dump($theme);
+	// exit;
 
 	// check for a pre-1.x cacti being upgraded
 	if ($theme == '' && !db_table_exists('settings_user')) {
-		return 'modern';
+		return 'vtidc';
 	}
-
+	// var_dump($_SESSION['sess_user_id']);
 	// figure out user defined theme
 	if (isset($_SESSION['sess_user_id'])) {
 		// fetch user defined theme
@@ -4657,15 +4659,24 @@ function top_header() {
 
 function top_graph_header() {
 	global $config;
+	
 	if (!isset_request_var('header') || get_nfilter_request_var('header') == 'true') {
-		include_once($config['base_path'] . '/include/top_graph_header.php');
+		if(get_selected_theme() === 'vtidc'){
+			include_once($config['base_path'] . '/include/top_header.php');
+		}else{
+			include_once($config['base_path'] . '/include/top_graph_header.php');
+		}
 	}
 }
 
 function general_header() {
 	global $config;
 	if (!isset_request_var('header') || get_nfilter_request_var('header') == 'true') {
-		include_once($config['base_path'] . '/include/top_general_header.php');
+		if(get_selected_theme() === 'vtidc'){
+			include_once($config['base_path'] . '/include/top_header.php');
+		}else{
+			include_once($config['base_path'] . '/include/top_general_header.php');
+		}
 	}
 }
 
@@ -7401,4 +7412,17 @@ function cacti_unserialize($strobj) {
 	} else {
 		return unserialize($strobj);
 	}
+}
+
+
+function convertStrPreventXss($input){
+	$pattern = '/<[^>]*>|javascript:[^"\'\s]*|data:[^"\'\s]*|on\w+\s*=\s*[^"\'\s]*/i';
+
+	$name = preg_replace($pattern, '', $input);
+
+    $output = trim(
+        trim(htmlspecialchars($name, ENT_QUOTES, 'UTF-8'), ' ')
+    );
+
+	return !$output ? '' : $output;
 }

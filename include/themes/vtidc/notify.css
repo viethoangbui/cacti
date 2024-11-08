@@ -1,0 +1,8 @@
+.notifyjs-corner {
+    font-size: 16px;
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+}
+.notifyjs-corner.success { background-color: #28a745; }
+.notifyjs-corner.error { background-color: #dc3545; }

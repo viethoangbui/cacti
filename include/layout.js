@@ -598,10 +598,30 @@ function selectUpdateRow(event, element) {
 		updateCheckboxes(checkboxes, element.find(':checkbox'));
 	} else {
 		element.toggleClass('selected');
+
 		if (element.hasClass('selected')) {
 			element.find(':checkbox').prop('checked', true).attr('aria-checked', 'true').attr('data-prev-check', 'true');
+			if($('#graphs2_child').length > 0){
+				$('#graphs2_child .tableRow').each(function(index, element) {
+        			if($(element).hasClass('selected') === true){
+						$('#btn-add-graph').show( "fast" )
+					}
+    			})
+			}
 		} else {
 			element.find(':checkbox').prop('checked', false).removeAttr('aria-checked').removeAttr('data-prev-check');
+			if($('#graphs2_child').length > 0){
+				let count = 0;
+				$('#graphs2_child .tableRow').each(function(index, element) {
+        			if($(element).hasClass('selected') === false){
+						count++
+					}
+    			})
+
+				if($('#graphs2_child .tableRow').length === count){
+					$('#btn-add-graph').hide( "fast" )
+				}
+			}
 		}
 	}
 
@@ -4802,4 +4822,3 @@ function checkSNMPPassphraseConfirm(type) {
 		}
 	}
 }
-

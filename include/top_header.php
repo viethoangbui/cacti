@@ -26,7 +26,6 @@ global $config, $menu;
 
 $page_title = api_plugin_hook_function('page_title', draw_navigation_text('title'));
 $using_guest_account = false;
-
 if (!isset_request_var('headercontent')) { ?>
 	<!DOCTYPE html>
 	<html lang='<?php print CACTI_LOCALE; ?>'>

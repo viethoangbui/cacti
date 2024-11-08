@@ -257,7 +257,6 @@ function clog_view_logfile() {
 	html_start_box(__('Log Filters'), '100%', '', '3', 'center', '');
 	filter($clogAdmin, basename($logfile));
 	html_end_box();
-
 	/* read logfile into an array and display */
 	$total_rows      = 0;
 	$number_of_lines = get_request_var('tail_lines') < 0 ? read_config_option('max_display_rows') : get_request_var('tail_lines');

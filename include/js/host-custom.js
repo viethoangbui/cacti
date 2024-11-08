@@ -55,16 +55,21 @@ function getDetailHost(supplierId, deviceId, modelId) {
 }
 
 
-function fetchUrlData(url, select, valueSelected) {
+function fetchUrlData(url, select, valueSelected = null) {
     fetchData(
         url,
         (dataArr) => {
+			$(select).selectmenu()
+            $(select).empty()
             dataArr.forEach(item => {
                 $(select).append(new Option(item.name, item.id));
             })
 
-            $(select).selectmenu()
-            $(select).val(valueSelected).selectmenu("refresh")
+            if (valueSelected) {
+                $(select).val(valueSelected)
+            }
+
+            $(select).selectmenu("refresh")
         }
     )
 }

@@ -6,6 +6,7 @@ include('./include/auth.php');
 include_once('./lib/html_tree.php');
 include_once('./lib/html_graph.php');
 include_once('./lib/api_tree.php');
+include_once('./lib/rrd.php');
 include_once('./lib/graphs.php');
 include_once('./lib/reports.php');
 include_once('./lib/timespan_settings.php');
@@ -215,7 +216,7 @@ case 'tree':
 		$_SESSION['sess_tree_id'] = get_filter_request_var('tree_id');
 	}
 
-	top_graph_header();
+	include_once($config['base_path'] . '/include/top_graph_header.php');
 
 	?>
 	<script type='text/javascript'>
@@ -1049,4 +1050,28 @@ case 'list_ABC':
 	}
 
 	break;
-}
+	case 'graph_generate': 
+		if(empty($_POST['graph_local_ids'])){
+			echo 'Data send not available';
+			return;
+		}
+
+		$graphs = json_decode($_POST['graph_local_ids'], true);
+		$graphLocalIds = '';
+
+		foreach($graphs as $item){
+			$graphLocalIds.="{$item['graph_local_id']}, ";
+		}
+		$graphLocalIds = trim($graphLocalIds, ', ');
+		$templateData = db_fetch_assoc("SELECT data_source_path FROM data_template_data WHERE local_data_id IN ($graphLocalIds)");
+		$sources = [];
+		$realPath = str_replace(':', '\:', $config['rra_path']);
+
+		foreach($templateData as $val){
+			$sources[] = str_replace('<path_rra>', $realPath, $val['data_source_path']);
+		}
+
+		$data = view_Graph(graphSource($sources, 'TOTAL'));
+		echo substr($data, strpos($data, '<svg'));
+	break;
+}	

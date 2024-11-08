@@ -58,8 +58,8 @@ section.host-edit-form .he-right{
 .modal-host-edit-wrapper {
   position: absolute;
   z-index: 9999;
-  top: 1em;
-  left: 25%;
+  top: 0em;
+  left: 22%;
   width: 60em;
   margin-left: -16em;
   background-color: #fff;
@@ -142,4 +142,10 @@ button.btn-update, button.btn-update:hover{
 
 .he-field label{
   text-transform: capitalize;
+}
+
+.modal-host-edit-close{
+  top: 20%;
+  right: 1%;
+  display: flex;
 }
