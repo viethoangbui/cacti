@@ -336,7 +336,7 @@ $(document).ready(function () {
 		}
 	})
 
-	let source = new EventSource("demo_see.php");
+	let source = new EventSource("observer_log.php");
 	source.onmessage = function (event) {
 		showNotificationWithClose(event.data, 'error')
 	};
