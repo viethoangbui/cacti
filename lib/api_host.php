@@ -124,7 +124,7 @@ function handleEdit_javascript($hosts)
 	<script src='./include/js/host-custom.js'></script>
 	<script type='text/javascript'>
 		const hosts = <?= json_encode($hosts) ?>;
-		let hostIdGlobal = null
+		// let hostIdGlobal = null
 
 		$(document).ready(function() {
 			document.querySelectorAll("#host2_child tr").forEach(row => {

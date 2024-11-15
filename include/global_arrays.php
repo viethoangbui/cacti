@@ -1008,7 +1008,8 @@ if ($config['poller_id'] == 1 || $config['connection'] == 'online') {
 			// 'graphs_custom.php'           => __('Graphs Custom'),
 			'data_sources.php'     => __('Data Sources'),
 			'aggregate_graphs.php' => __('Aggregates'),
-			'sandvine.php'     => __('Sandvine')
+			'sandvine.php'     => __('Sandvine'),
+			'classMap.php'     => __('ClassMap'),
 		),
 		__('Data Collection') => array(
 			'pollers.php' => __('Data Collectors'),
@@ -1363,7 +1364,8 @@ $user_auth_realm_filenames = array(
 	'model.php' => -1,
 	'total.php' => -1,
 	'graphs_custom.php' => -1,
-	'sandvine.php' => -1
+	'sandvine.php' => -1,
+	'classMap.php' => -1,
 );
 
 $hash_type_codes = array(

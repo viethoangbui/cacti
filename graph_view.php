@@ -1050,7 +1050,7 @@ case 'list_ABC':
 	}
 
 	break;
-	case 'graph_generate': 
+	case 'graph_generate':
 		if(empty($_POST['graph_local_ids'])){
 			echo 'Data send not available';
 			return;

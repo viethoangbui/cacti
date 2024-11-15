@@ -2,7 +2,27 @@
     font-size: 16px;
     color: #fff;
     padding: 10px;
-    border-radius: 4px;
+    border-radius: 10px;
 }
-.notifyjs-corner.success { background-color: #28a745; }
-.notifyjs-corner.error { background-color: #dc3545; }
+
+.notifyjs-bootstrap-error{
+	background-color: var(--grey-secondary) !important;
+	color: var(--red) !important;
+	font-weight: 500 !important;
+	background-image: none !important;
+	padding-left: 15px !important;
+	padding-top: 22px !important;
+	border-color: var(--grey) !important;
+}
+
+.notifyjs-container::after{
+	content: url("data:image/svg+xml,%0A%3Csvg xmlns='http://www.w3.org/2000/svg' height='20px' viewBox='0 -960 960 960' width='20px' fill='%23EE0033'%3E%3Cpath d='m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z'/%3E%3C/svg%3E");
+	width: 20px;
+    height: 20px;
+    top: 0;
+    right: 0;
+	position: absolute;
+    display: inline-block;
+    margin-top: 4px;
+    margin-right: 4px;
+}

@@ -305,9 +305,12 @@ function setMenuVisibility() {
 	});
 }
 
+
+const notificationAudio = new Audio(window.location.origin + "/cacti/include/sounds/notification_error.mp3");
+
 function playNotificationSound() {
-    const audio = new Audio(window.location.origin + "/cacti/include/sounds/notification.mp3");
-    audio.play();
+    notificationAudio.currentTime = 0;
+    notificationAudio.play();
 }
 
 function showNotificationWithClose(message, type = "info") {
