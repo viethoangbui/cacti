@@ -92,6 +92,8 @@ var faIcons = {
 		icon: '<i class="fas fa-chevron-right" aria-hidden="true"></i>'
 	}
 };
+let arrSessionStorage = JSON.parse(sessionStorage.getItem('class_map_ids')) || []
+let ipSessionStorage = JSON.parse(sessionStorage.getItem('ips_address')) || []
 
 window.paceOptions = {
 	ajax: true,
@@ -567,9 +569,42 @@ function applySelectorVisibilityAndActions() {
 	});
 
 	// Create Actions for Rows
-	$('tr[id^="line"].selectable').filter(':not(.disabled_row)').off('click').on('click', function(event) {
+	$('tr[id^="line"].selectable').filter(':not(.disabled_row)').off('click').on('click', function(event) {		
 		selectUpdateRow(event, $(this));
 	});
+
+	// Class map rows action
+	$('#classMap2_child tr[id^="line"].selectable, #classMap_clear2_child tr[id^="line"].selectable')
+	.filter(':not(.disabled_row)').off('click').on('click', function (event) {
+        if (!$(this).children('td:first').attr('clnumber')) {
+            selectUpdateRow(event, $(this));
+            const classId = Number($(this).children('.edit-cell').attr('classid'))
+            const ip =$(this).children('.edit-cell').attr('ip')
+
+            if ($(this).hasClass('selected')) {
+                $('#classMap2_child .tableRow, #classMap_clear2_child .tableRow').each(function (_index, element) {
+                    if ($(element).hasClass('selected') === true) {	
+                        $('#btn-edit-classmap').show()
+                    }
+                })
+                //save
+                saveClassMaps(classId, ip)
+            } else {
+                let count = 0;
+                $('#classMap2_child .tableRow, #classMap_clear2_child .tableRow').each(function (_index, element) {
+                    if ($(element).hasClass('selected') === false) {
+                        count++
+                    }
+                })
+
+                if ($('#classMap2_child .tableRow').length === count) {
+                    $('#btn-edit-classmap').hide()
+                }
+                //remove
+                removeClassMap(classId, ip)
+            }
+        }
+    });
 }
 
 function disableSelection() {
@@ -2211,7 +2246,7 @@ function loadPageUsingPost(href, postData, returnLocation) {
 	});
 }
 
-function loadPage(href, force) {
+function loadPage(href, force) {	
 	statePushed = false;
 	cont = false;
 
@@ -2311,6 +2346,16 @@ function loadPage(href, force) {
 				getPresentHTTPErrorOrRedirect(html, href);
 			}
 		);
+	}
+
+	if(sessionStorage.getItem('class_map_ids')){
+		sessionStorage.removeItem('class_map_ids')
+		arrSessionStorage = []
+	}
+
+	if(sessionStorage.getItem('ips_address')){
+		sessionStorage.removeItem('ips_address')
+		ipSessionStorage = []
 	}
 
 	return false;

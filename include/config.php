@@ -228,3 +228,4 @@ $i18n_log = null;
  * locations under /tmp/systemd<uniqueid>/tmp
  */
 $i18n_text_log = null;
+$plugin_arch = true;

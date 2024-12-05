@@ -646,7 +646,7 @@ label {
 	cursor: pointer;
 	padding: 2px;
 	vertical-align: middle;
-	/* color: lime; */
+	color: lime;
 	font-weight: 500;
 	font-size: 14px;
 }
@@ -841,7 +841,6 @@ label {
 	height: 100%;
 	float: left;
 	display: none;
-	width: 13% !important;
 }
 
 .cactiTreeNavigationArea a {
@@ -1642,7 +1641,7 @@ th.sortable {
 }
 
 .graphSubHeaderColumn {
-	color: var(--red);
+	color: white;
 	font-size: 14px;
 	vertical-align: middle;
 	text-align: left;
@@ -1666,7 +1665,8 @@ th.sortable {
 
 .cactiFormStart .tableRow:hover, 
 .cactiTable .tableRow:hover{
-	color: var(--red);
+	color: #fff !important;
+	background: var(--red) !important;
 }
 
 .cactiTable .tableRow:hover a{
@@ -2141,7 +2141,7 @@ th:last-child {
 }
 
 tr.selected {
-	color: white !important;
+	color: white;
 	background: rgba(238, 0, 51, 0.9);
 }
 
@@ -2387,7 +2387,7 @@ tr#realtime td:first-child {
 }
 
 #graph_view_tree_content2_child>tbody>.tableHeader {
-	background: var(--grey-secondary);
+	background: rgba(37, 37, 37, 0.9);
 }
 
 .menuitem {
@@ -2778,6 +2778,38 @@ input[name=__csrf_magic]+.navBarNavigation {
 #data_queries_edit3_child tr:not(.selectable) a.linkEditMain:hover{
     color: #fff;
 }
+#tree_edit2_child.cactiTable .tableRow:hover,
+#tree_edit4_child.cactiTable .tableRow:hover,
+#tree_edit8_child.cactiTable .tableRow:hover,
+#tree_edit6_child.cactiTable .tableRow:hover,
+#total_edit2_child.cactiTable .tableRow:hover,
+#total_edit4_child.cactiTable .tableRow:hover,
+#total_edit8_child.cactiTable .tableRow:hover,
+#total_edit6_child.cactiTable .tableRow:hover
+{
+    background: transparent !important;
+}
+
+#tree_edit2_child.cactiTable .tableRow:hover a,
+#tree_edit4_child.cactiTable .tableRow:hover a,
+#tree_edit8_child.cactiTable .tableRow:hover a,
+#tree_edit6_child.cactiTable .tableRow:hover a,
+#total_edit2_child.cactiTable .tableRow:hover a,
+#total_edit4_child.cactiTable .tableRow:hover a,
+#total_edit8_child.cactiTable .tableRow:hover a,
+#total_edit6_child.cactiTable .tableRow:hover a
+{
+    color: #000000;
+}
+#graph_templates_template_edit1_child .tableRowGraph:hover .linkEditMain{
+    color: #FFFFFF;
+}
+
+#cdef_item tr:not(.selectable) a.linkEditMain:hover,
+#vdef_item tr:not(.selectable) a.linkEditMain:hover
+{
+    color: #fff;
+}
 
 #graph_view_preview2 .cactiTableTitle,
 #graph_view_preview2 .cactiTableButton{
@@ -2785,7 +2817,7 @@ input[name=__csrf_magic]+.navBarNavigation {
 }
 
 #graph_view_preview2 .cactiTableTitle span{
-	color: var(--red)
+	color: var(--red);
 }
 
 #graph_view_preview1 .cactiTableTitle,
@@ -2794,153 +2826,5 @@ input[name=__csrf_magic]+.navBarNavigation {
 }
 
 #graph_view_preview1 .cactiTableTitle span{
-	color: var(--red)
-}
-/* @import url('./notify.css'); */
-
-#reload4{
-	font-weight: 900;
-}
-
-.notifyjs-corner {
-    font-size: 16px;
-    color: #fff;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.notifyjs-bootstrap-error{
-	background-color: var(--grey-secondary) !important;
-	color: var(--red) !important;
-	font-weight: 500 !important;
-	background-image: none !important;
-	padding-left: 15px !important;
-	padding-top: 22px !important;
-	border-color: var(--grey) !important;
-}
-
-.notifyjs-container::after{
-	content: url("data:image/svg+xml,%0A%3Csvg xmlns='http://www.w3.org/2000/svg' height='20px' viewBox='0 -960 960 960' width='20px' fill='%23EE0033'%3E%3Cpath d='m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z'/%3E%3C/svg%3E");
-	width: 20px;
-    height: 20px;
-    top: 0;
-    right: 0;
-	position: absolute;
-    display: inline-block;
-    margin-top: 4px;
-    margin-right: 4px;
-}
-
-
-.modal-edit {
-    position: absolute;
-    z-index: 20;
-    top: 0;
-    left: 0;
-    visibility: hidden;
-    width: 100%;
-    height: 100%;
-}
-
-.modal-edit.is-visible {
-    visibility: visible;
-}
-
-.modal-edit-overlay {
-  position: fixed;
-  z-index: 10;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: hsla(0, 0%, 0%, 0.5);
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0s linear 0.3s, opacity 0.3s;
-}
-
-.modal-edit.is-visible .modal-edit-overlay {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-}
-
-.modal-edit-wrapper {
-  position: absolute;
-  z-index: 9999;
-  top: 0em;
-  left: 22%;
-  width: 60em;
-  margin-left: -16em;
-  background-color: #fff;
-  box-shadow: 0 0 1.5em hsla(0, 0%, 0%, 0.35);
-}
-
-.modal-edit-transition {
-  transition: all 0.3s 0.12s;
-  transform: translateY(-10%);
-  opacity: 0;
-}
-
-.modal-edit.is-visible .modal-edit-transition {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.modal-edit-header{
-  padding: 1em;
-}
-
-.modal-edit-content{
-  padding: 1em 2em;
-}
-
-.modal-edit-header {
-  position: relative;
-  background-color: #fff;
-  box-shadow: 0 1px 2px hsla(0, 0%, 0%, 0.06);
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.modal-edit-close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0.1em;
-  color: #aaa;
-  background: none;
-  border: 0;
-}
-
-.modal-edit-close:hover {
-  background-color: #e0e0e0;
-}
-
-.modal-edit-heading {
-  font-size: 1.125em;
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.modal-edit-content > *:first-child {
-  margin-top: 0;
-}
-
-.modal-edit-content > *:last-child {
-  margin-bottom: 0;
-}
-
-
-.cactiTable .tableRow:hover svg
-{
-	fill: var(--red);
-}
-
-.cactiTable .selected:hover svg{
-	fill: var(--red);
-}
-
-.cactiTable .selected svg{
-	fill: white !important;
+	color: var(--red);
 }

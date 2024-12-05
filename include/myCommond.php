@@ -2,7 +2,8 @@
 include_once('./lib/rrd.php');
 include_once('./lib/graph_variables.php');
 
-function local_data_array ($arr){
+function local_data_array($arr)
+{
     $resultArr = array();
     foreach ($arr as $value) {
         $resultArr[$value] = array(
@@ -13,7 +14,8 @@ function local_data_array ($arr){
     return $resultArr;
 }
 
-function convertUnitToByte($value) {
+function convertUnitToByte($value)
+{
     $value = (float) $value;
     $kbVal = $value / 1000;
     $mbVal = $kbVal / 1000;
@@ -39,7 +41,8 @@ function convertUnitToByte($value) {
     return "0.00 B";
 }
 
-function unixToDatetime($timestamp){
+function unixToDatetime($timestamp)
+{
     // Create DateTime object from Unix timestamp
     $date = new DateTime("@$timestamp", new DateTimeZone('UTC')); // Start with UTC
     // Set the desired time zone
@@ -158,15 +161,18 @@ function unixToDatetime($timestamp){
 //     return $result;
 // }
 
-function Get_Value_95th($local_data_array,$start,$end){
-    return Get95th_Total($local_data_array,$start,$end);
+function Get_Value_95th($local_data_array, $start, $end)
+{
+    return Get95th_Total($local_data_array, $start, $end);
 }
 
-function exec_file_RRD($listSources,$start,$end,$title){
-    $result = graphSource($listSources, $title, 1,1, $start, $end);
+function exec_file_RRD($listSources, $start, $end, $title)
+{
+    $result = graphSource($listSources, $title, 1, 1, $start, $end);
     return $result;
 }
-function graphSource($listSources, $title, $unit, $format, $start, $end) {
+function graphSource($listSources, $title, $unit, $format, $start, $end)
+{
     $execs = [];
     $execs[] = ' graphv';
     $execs[] = ' - ';
@@ -175,14 +181,14 @@ function graphSource($listSources, $title, $unit, $format, $start, $end) {
     $execs[] = '--base=1000 ';
     $execs[] = '--height=200 ';
     $execs[] = '--interlaced ';
-    $execs[] = '--title "'.$title.'"';
+    $execs[] = '--title "' . $title . '"';
     $execs[] = '-v "Network Usage" ';
     $execs[] = '--font TITLE:11:"Verdana, Arial, Helvetica, sans-serif,Bold" ';
 
     $cdefA = "CDEF:a=";
     $cdefB = "CDEF:b=";
-    for( $i = 0; $i < count($listSources); $i++){   
-        if(!empty($listSources[$i])){
+    for ($i = 0; $i < count($listSources); $i++) {
+        if (!empty($listSources[$i])) {
             $execs[] = "DEF:avgin_" . $i . "=" . $listSources[$i] . ":traffic_in:AVERAGE";
             $execs[] = "DEF:avgout_" . $i . "=" . $listSources[$i] . ":traffic_out:AVERAGE";
             $cdefA .= "avgin_" . $i . ",UN,0,avgin_" . $i . ",IF,";
@@ -191,17 +197,17 @@ function graphSource($listSources, $title, $unit, $format, $start, $end) {
                 $cdefA .= "+,";
                 $cdefB .= "+,";
             }
-        }         
+        }
     }
-    $execs[]= $cdefA;
-    $execs[]= $cdefB;
-    
+    $execs[] = $cdefA;
+    $execs[] = $cdefB;
+
     $execs[] = 'CDEF:in=a,8,*';
     $execs[] = 'CDEF:out=b,8,*';
     $execs[] = 'CDEF:95per=in,out,GT,in,out,IF';
     $execs[] = 'VDEF:95th=95per,95,PERCENT';
 
-    $execs[] = 'COMMENT:"From '.unixToDatetime($start).' To '.unixToDatetime($end).'\c" COMMENT:" \n" ';
+    $execs[] = 'COMMENT:"From ' . unixToDatetime($start) . ' To ' . unixToDatetime($end) . '\c" COMMENT:" \n" ';
 
     $execs[] = 'AREA:in#00FF00:" Inbound  "';
     $execs[] = 'COMMENT:"Max\:"';
@@ -229,16 +235,17 @@ function graphSource($listSources, $title, $unit, $format, $start, $end) {
     $execs[] = '--slope-mode ';
     $execs[] = '--watermark "VIETTEL IDC" ';
 
-    $execs[] = '--start='.$start;
-    $execs[] = '--end='.$end;
+    $execs[] = '--start=' . $start;
+    $execs[] = '--end=' . $end;
 
     $command =  implode(' ', $execs);
     //var_dump($command );
     //var_dump(parse_url('https://hl-mrtg.vtdc.local/api/backup/get_device_backup_info'));
-    return $command ;
+    return $command;
 }
 
-function callApi($url, $data, $token){
+function callApi($url, $data, $token)
+{
     //     $url = 'https://172.16.85.18:8686/api/sandvine/token'; // Replace with your actual endpoint
     //     // The data to send in the request body
     // $data = [
@@ -274,4 +281,104 @@ function callApi($url, $data, $token){
     }
     // Close the cURL session
     curl_close($ch);
+}
+
+
+function executeClassMapd($in, $out, $title, $start, $end)
+{
+    $execs = [];
+    $execs[] = ' graphv';
+    $execs[] = ' - ';
+    $execs[] = '--imgformat=SVG ';
+    $execs[] = '--width=700 ';
+    $execs[] = '--base=1000 ';
+    $execs[] = '--height=200 ';
+    $execs[] = '--interlaced ';
+    $execs[] = '--title "' . $title . '"';
+    $execs[] = '-v "Network Usage" ';
+    $execs[] = '--font TITLE:11:"Verdana, Arial, Helvetica, sans-serif,Bold" ';
+
+    $cdefA = "CDEF:a=";
+    $cdefB = "CDEF:b=";
+
+    $execs[] = "DEF:avgin_" . 0 . "=" . $in . ":ds0:AVERAGE";
+    $execs[] = "DEF:avgout_" . 0 . "=" . $out . ":ds0:AVERAGE";
+    $cdefA .= "avgin_" . 0 . ",UN,0,avgin_" . 0 . ",IF,";
+    $cdefB .= "avgout_" . 0 . ",UN,0,avgout_" . 0 . ",IF,";
+
+    $execs[] = $cdefA;
+    $execs[] = $cdefB;
+
+    $execs[] = 'CDEF:in=a,8,*';
+    $execs[] = 'CDEF:out=b,8,*';
+    $execs[] = 'CDEF:95per=in,out,GT,in,out,IF';
+    $execs[] = 'VDEF:95th=95per,95,PERCENT';
+
+    $execs[] = 'COMMENT:"From ' . unixToDatetime($start) . ' To ' . unixToDatetime($end) . '\c" COMMENT:" \n" ';
+
+    $execs[] = 'AREA:in#00FF00:" Inbound  "';
+    $execs[] = 'COMMENT:"Max\:"';
+    $execs[] = 'GPRINT:in:MAX:"%8.2lf %S"';
+    $execs[] = 'COMMENT:"Avg\:"';
+    $execs[] = 'GPRINT:in:AVERAGE:"%8.2lf %S"';
+    $execs[] = 'COMMENT:"Last\:"';
+    $execs[] = 'GPRINT:in:LAST:"%8.2lf %S\n"';
+
+    $execs[] = 'LINE1:out#0000FF:" Outbound " COMMENT:"Max\:"';
+    $execs[] = 'GPRINT:out:MAX:"%8.2lf %S"';
+    $execs[] = 'COMMENT:"Avg\:"';
+    $execs[] = 'GPRINT:out:AVERAGE:"%8.2lf %S"';
+    $execs[] = 'COMMENT:"Last\:"';
+    $execs[] = 'GPRINT:out:LAST:"%8.2lf %S\n"';
+
+    $execs[] = 'LINE:95th#CF000F:" 95th Percentile"';
+    $execs[] = 'GPRINT:95th:"%8.2lf %S\n"';
+    $execs[] = '--font AXIS:8:"Arial" ';
+    $execs[] = '--font LEGEND:8:"Courier" ';
+    $execs[] = '--font ';
+    $execs[] = 'UNIT:8:"Arial" ';
+    $execs[] = '--font WATERMARK:8:"Arial" ';
+    $execs[] = '--slope-mode ';
+    $execs[] = '--watermark "VIETTEL IDC" ';
+
+    $execs[] = '--start=' . $start;
+    $execs[] = '--end=' . $end;
+
+    $command =  implode(' ', $execs);
+    $descriptorspec = array(
+        0 => array('pipe', 'r'),
+        1 => array('pipe', 'w')
+    );
+    $process = proc_open("c:/rrdtool/rrdtool.exe - ", $descriptorspec, $pipes);
+
+    if (!is_resource($process)) {
+        unset($process);
+    } else {
+        fwrite($pipes[0], $command . "\r\nquit\r\n");
+        fclose($pipes[0]);
+        $fp = $pipes[1];
+    }
+
+    if (!isset($fp)) {
+        return;
+    }
+
+    $output = '';
+    while (!feof($fp)) {
+        $output .= fgets($fp, 4096);
+    }
+
+    if (isset($process)) {
+        fclose($fp);
+        proc_close($process);
+    }
+
+    $output = rtrim($output, "OK \n\r");
+
+    $strSvg = substr($output, strpos($output, '<svg '));
+    $base64_svg = base64_encode($strSvg);
+    // $myfile = fopen("testfile.txt", "w");
+    // fwrite($myfile, 'data:image/svg+xml;base64,' . $base64_svg);
+    // fclose($myfile);
+    return 'data:image/svg+xml;base64,' . $base64_svg;
 }

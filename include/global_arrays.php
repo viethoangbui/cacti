@@ -1366,6 +1366,7 @@ $user_auth_realm_filenames = array(
 	'graphs_custom.php' => -1,
 	'sandvine.php' => -1,
 	'classMap.php' => -1,
+	'threads.php' => -1
 );
 
 $hash_type_codes = array(

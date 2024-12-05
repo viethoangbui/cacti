@@ -193,5 +193,70 @@ function graphSource($listSources, $title) {
 
 function view_Graph($strRRD){
 	$output = rrdtool_execute($strRRD, false, '1', false);
-	return $output;
+	$local_graph_id = 0;
+	$rra_id = 0;
+	$gtype = 'svg';
+	$output = trim($output);
+	$oarray = array('type' => $gtype, 'local_graph_id' => $local_graph_id, 'rra_id' => $rra_id);
+
+	// Check if we received back something populated from rrdtool
+	if ($output !== false && $output != '' && strpos($output, 'image = ') !== false) {
+		// Find the beginning of the image definition row
+		$image_begin_pos  = strpos($output, 'image = ');
+		// Find the end of the line of the image definition row, after this the raw image data will come
+		$image_data_pos   = strpos($output, "\n", $image_begin_pos) + 1;
+		// Insert the raw image data to the array
+		$oarray['image']  = base64_encode(substr($output, $image_data_pos));
+		// Parse and populate everything before the image definition row
+		$header_lines = explode("\n", substr($output, 0, $image_begin_pos - 1));
+		foreach ($header_lines as $line) {
+			$parts = explode(' = ', $line);
+			$oarray[$parts[0]] = trim($parts[1]);
+		}
+	} else {
+		/* image type now png */
+		$oarray['type'] = 'png';
+		ob_start();
+		$graph_data_array['get_error'] = true;
+		$null_param = array();
+		rrdtool_function_graph($local_graph_id, $rra_id, $graph_data_array, '', $null_param, '1');
+		$error = ob_get_contents();
+		ob_end_clean();
+		if (read_config_option('stats_poller') == '') {
+			$error = __('The Cacti Poller has not run yet.');
+		}
+		if (isset($graph_data_array['graph_width']) && isset($graph_data_array['graph_height'])) {
+			$image = rrdtool_create_error_image($error, $graph_data_array['graph_width'], $graph_data_array['graph_height']);
+		} else {
+			$image = rrdtool_create_error_image($error);
+		}
+		if (isset($graph_data_array['graph_width'])) {
+			if (isset($graph_data_array['graph_nolegend'])) {
+				$oarray['image_width']  = round($graph_data_array['graph_width']  * 1.24, 0);
+				$oarray['image_height'] = round($graph_data_array['graph_height'] * 1.45, 0);
+			} else {
+				$oarray['image_width']  = round($graph_data_array['graph_width']  * 1.15, 0);
+				$oarray['image_height'] = round($graph_data_array['graph_height'] * 1.8, 0);
+			}
+		} else {
+			$oarray['image_width']  = round(db_fetch_cell_prepared(
+				'SELECT width
+				FROM graph_templates_graph
+				WHERE local_graph_id = ?',
+				array($local_graph_id)
+			), 0);
+			$oarray['image_height']  = round(db_fetch_cell_prepared(
+				'SELECT height
+				FROM graph_templates_graph
+				WHERE local_graph_id = ?',
+				array($local_graph_id)
+			), 0);
+		}
+		if ($image !== false) {
+			$oarray['image'] = base64_encode($image);
+		} else {
+			$oarray['image'] = base64_encode(file_get_contents(__DIR__ . '/images/cacti_error_image.png'));
+		}
+	}
+	return $oarray;
 }

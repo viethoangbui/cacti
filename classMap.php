@@ -1,13 +1,16 @@
 <?php
 include('./include/auth.php');
 include('./include/myCommond.php');
-
 switch (get_request_var('action')) {
     case 'update':
         $status = isset($_POST['status']) ? 1 : 0;
         update($_POST['ids'], $_POST['cl'], $status);
-
         break;
+    case 'export':
+        classmap_export();
+        break;
+    case 'clear':
+        unset($_SESSION['cl_sort_column'], $_SESSION['cl_sort_direction']);
     default:
         top_header();
 
@@ -26,8 +29,13 @@ function isValidFormat($input)
 // define function
 function update($ids, $clNumber, $status)
 {
+    $url = "Location: " . $_SERVER['SCRIPT_NAME'];
+    if (isset($_GET['page'])) {
+        $url .= "?page={$_GET['page']}";
+    }
+
     if (!isValidFormat($ids)) {
-        header("Location: " . $_SERVER['SCRIPT_NAME']);
+        header($url);
     }
 
     $ids = convertStrPreventXss($ids);
@@ -39,18 +47,38 @@ function update($ids, $clNumber, $status)
     );
 
     db_execute_prepared(
-        "UPDATE classmaps
+        "UPDATE class_map
                 SET cl_number = ?, user_update = ?, status = ?
                 WHERE id IN ($ids)",
         [convertStrPreventXss($clNumber), $username, convertStrPreventXss($status)]
     );
-    header("Location: " . $_SERVER['SCRIPT_NAME']);
+    header($url);
+}
+
+function classmap_export()
+{
+    $classMaps = db_fetch_assoc("SELECT * FROM class_map");
+
+    $stdout = fopen('php://output', 'w');
+
+    header('Content-type: application/excel');
+    header('Content-Disposition: attachment; filename=cacti-classmap-' . time() . '.csv');
+
+    if (cacti_sizeof($classMaps)) {
+        $columns = array_keys($classMaps[0]);
+        fputcsv($stdout, $columns);
+
+        foreach ($classMaps as $c) {
+            fputcsv($stdout, $c);
+        }
+    }
+
+    fclose($stdout);
 }
 
 function classMap()
 {
     $url = 'classMap.php?action=edit';
-
     html_start_box(__('ClassMap'), '100%', '', '3', 'center', $url);
 
 ?>
@@ -84,7 +112,7 @@ function classMap()
                 }
 
                 function clearFilter() {
-                    strURL = 'classMap.php?clear=1&header=false';
+                    strURL = 'classMap.php?action=clear&header=false';
                     loadPageNoHeader(strURL);
                 }
 
@@ -146,6 +174,11 @@ function classMap()
             'align' => 'left',
             'sort' => 'ASC'
         ),
+        'nosort2' => array(
+            'display' => __('Class Map'),
+            'align' => 'left',
+            'tip' => __('View.')
+        ),
         'cl_number' => array(
             'display' => __('Cl Number'),
             'align' => 'left',
@@ -180,7 +213,6 @@ function classMap()
             'tip' => __('The total number of Data Sources generated from this Device.')
         ),
     );
-
     $display_text_size = sizeof($display_text);
     $display_text = api_plugin_hook_function('classmap_display_text', $display_text);
     $limit = 30;
@@ -189,38 +221,43 @@ function classMap()
     $page = (int)$page !== 0 ? (int)$page : $pageDefault;
 
     $offset = ($page - 1) * $limit;
-    $sql = "SELECT * FROM classmaps";
+    $sql = "SELECT * FROM class_map";
 
     $searchFilter = !empty($_GET['filter']) ? '%' . html_escape_request_var('filter') . '%' : null;
 
-    $sortColumn = !empty($_GET['sort_column']) ? $_GET['sort_column'] : null;
-    $sortDirection = !empty($_GET['sort_direction']) ? $_GET['sort_direction'] : null;
+    $sortColumn = !empty($_GET['sort_column']) ? $_GET['sort_column'] : $_SESSION['cl_sort_column'] ?? null;
+    $sortDirection = !empty($_GET['sort_direction']) ? $_GET['sort_direction'] : $_SESSION['cl_sort_direction'] ?? null;
+
+    if ($sortColumn) $_SESSION['cl_sort_column'] = $sortColumn;
+    if ($sortDirection) $_SESSION['cl_sort_direction'] = $sortDirection;
 
     if ($searchFilter) {
-        $sql .= " WHERE ip_address LIKE ?";
+        $sql .= " WHERE ip_address LIKE ? OR class_map_name LIKE ?";
     }
 
     if ($sortColumn && $sortDirection) {
         $sql .= " ORDER BY $sortColumn $sortDirection";
     }
-    $sql.= " LIMIT $offset, $limit";
+    $sql .= " LIMIT $offset, $limit";
 
-    $classMaps = $searchFilter ? db_fetch_assoc_prepared($sql, array($searchFilter)) : db_fetch_assoc($sql);
-    $total = db_fetch_cell("SELECT COUNT(*) FROM classmaps");
+    $classMaps = $searchFilter ? db_fetch_assoc_prepared($sql, array($searchFilter, $searchFilter)) : db_fetch_assoc($sql);
+    $total = !$searchFilter ? db_fetch_cell("SELECT COUNT(*) FROM class_map")
+        : db_fetch_cell_prepared("SELECT COUNT(*) FROM class_map WHERE ip_address LIKE ?", [$searchFilter]);
     $pageCount = ceil($total / $limit);
     form_start('classMap.php', 'chk');
     ?>
     <?php
 
     html_start_box('', '100%', '', '3', 'center', '');
-    html_header_sort_checkbox($display_text, get_request_var('sort_column'), get_request_var('sort_direction'), false);
+    html_header_sort_checkbox($display_text, $sortColumn, $sortDirection, false);
 
     if (sizeof($display_text) != $display_text_size && cacti_sizeof($classMaps)) { //display_text changed
         api_plugin_hook_function('classmap_table_replace', $classMaps);
     } else if (cacti_sizeof($classMaps)) {
         foreach ($classMaps as $class) {
             form_alternate_row('line' . $class['id'], true);
-            echo "<td class=\"edit-cell\" classId=\"{$class['id']}\" clnumber=\"{$class['cl_number']}\" status=\"{$class['status']}\"> 
+            echo "<td class=\"edit-cell\" classId=\"{$class['id']}\" ip=\"{$class['ip_address']}\"
+                    clnumber=\"{$class['cl_number']}\" status=\"{$class['status']}\" style=\"cursor:pointer;\"> 
 				<a><svg xmlns='http://www.w3.org/2000/svg' height='18px' viewBox='0 -960 960 960' width='18px' fill='#EE0033'>
                 <path d='M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z'/></svg>
                 </a>
@@ -228,12 +265,15 @@ function classMap()
             form_selectable_cell(filter_value($class['ip_address'], get_request_var('filter')), $class['id']);
             form_selectable_cell(filter_value($class['class_map_key'], get_request_var('filter')), $class['id']);
             form_selectable_cell(filter_value($class['class_map_name'], get_request_var('filter')), $class['id']);
+            echo "<td class=\"class-map-view\" style=\"cursor:pointer;\"> 
+				<a href='#'>Graph</a>
+                </td>";
             form_selectable_cell(filter_value($class['cl_number'], get_request_var('filter')), $class['id']);
             form_selectable_cell(filter_value($class['user_create'], get_request_var('filter')), $class['id']);
             form_selectable_cell(filter_value($class['user_update'], get_request_var('filter')), $class['id']);
             form_selectable_cell(filter_value($class['time_create'], get_request_var('filter')), $class['id']);
             form_selectable_cell(filter_value($class['time_update'], get_request_var('filter')), $class['id']);
-            form_selectable_cell(filter_value($class['status'] ? 'Up' : 'Down', get_request_var('filter')), $class['id']);
+            form_selectable_cell(filter_value($class['status'] ? 'Enable' : 'Disable', get_request_var('filter')), $class['id']);
             form_checkbox_cell($class['status'], $class['id']);
             form_end_row();
         }
@@ -245,6 +285,8 @@ function classMap()
 
     form_end();
     api_plugin_hook('device_table_bottom');
+    $showDots = false;
+
     ?>
     <?php if ($pageCount > 1): ?>
         <div class="navBarNavigation" style="margin:12px 0;">
@@ -252,14 +294,30 @@ function classMap()
                 <?= (($page - 1) * $limit) + 1 ?> to <?= (($page - 1) * $limit) + count($classMaps) ?> of <?= $total ?>
                 [ <ul class="pagination">
                     <?php for ($i = 0; $i < $pageCount; $i++): ?>
-                        <li>
-                            <a href="?page=<?= $i + 1 ?>" class="<?= $page === ($i + 1) ? 'active' : '' ?>">
-                                <?= $i + 1 ?></a>
-                        </li>
-                    <?php endfor; ?>
+                        <?php if ($i == 0 || $i + 1 == $pageCount || ($page < $i + 4 && $page > $i - 3)): ?>
+                            <li>
+                                <a url="?page=<?= $i + 1 ?>" class="<?= $page === ($i + 1) ? 'active' : '' ?>"
+                                    style="cursor: pointer;">
+                                    <?= $i + 1 ?></a>
+                            </li>
+                        <?php else: ?>
+                            <?php if (!$showDots || $page == $i - 4):
+                                $showDots = true; ?>
+                                <li><span>..</a></span>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        <?php endfor; ?>
                 </ul> ]
             </div>
         </div>
+        <script>
+            $(function() {
+                $('ul.pagination li a').on('click', (event) => {
+                    strURL = 'classMap.php' + $(event.target).attr('url') + '&header=false';
+                    loadPageNoHeader(strURL);
+                })
+            })
+        </script>
     <?php endif; ?>
 <?php
     renderModal();
@@ -282,9 +340,21 @@ function renderModal()
 
             <div class="modal-edit-body">
                 <div class="modal-edit-content">
-                    <form id="form-update" action="classMap.php?action=update" method="post">
+                    <form id="form-update"
+                        action="<?= "classMap.php?action=update" . (isset($_GET['page']) ? "&page={$_GET['page']}" : '') ?>" method="post">
                         <input type="hidden" name="ids" />
                         <section class="edit-form">
+                            <div style="display: flex;" id="modal-filed-ip-selected">
+                                <label for="cl" style="width: 20%;display:inline-block">IP selected</label>
+                                <table class="ip-address-selected" 
+                                        style="margin: 0 0 8px 4px;">
+                                    <tbody 
+                                        style="width:267.45px;display:block;overflow:auto;transform:rotateX(180deg);">
+                                        <tr></tr>
+                                        <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                             <div>
                                 <label for="cl" style="width: 20%;display:inline-block">CL Number</label>
                                 <input id="cl" name="cl" type="text" style="width: 70%;" />
@@ -318,25 +388,13 @@ function renderModal()
     </div>
     <script>
         $(function() {
-            function updateModal(ids, clText = null, status) {
-                $('input[name=ids]').val(ids)
-                $('#cl').val(clText)
-
-                if (Number(status)) {
-                    $('input[name=status]').attr('checked', 1)
-                }
-
-                if (!Number(status)) {
-                    $('input[name=status]').removeAttr('checked')
-                }
-
-            }
-
+            // handle click modal
             $('.modal-edit-toggle').on('click', function(e) {
                 e.preventDefault();
                 $('.modal-edit').toggleClass('is-visible');
             })
 
+            //handle click button edit
             $('.edit-cell').on('click', function(event) {
                 event.stopPropagation();
 
@@ -348,51 +406,35 @@ function renderModal()
                 $('.modal-edit').toggleClass('is-visible');
             });
 
-            $('tr[id^="line"]').filter(':not(.disabled_row)').off('click').on('click', function(event) {
-                if (!$(this).children('td:first').attr('clnumber')) {
-                    selectUpdateRow(event, $(this));
-
-                    if ($(this).hasClass('selected')) {
-                        $('#classMap2_child .tableRow').each(function(index, element) {
-                            if ($(element).hasClass('selected') === true) {
-                                $('#btn-edit-classmap').show("fast")
-                            }
-                        })
-                    } else {
-                        let count = 0;
-                        $('#classMap2_child .tableRow').each(function(index, element) {
-                            if ($(element).hasClass('selected') === false) {
-                                count++
-                            }
-                        })
-
-                        if ($('#classMap2_child .tableRow').length === count) {
-                            $('#btn-edit-classmap').hide("fast")
-                        }
-                    }
-                }
+            $('.class-map-view').on('click', function(event) {
+                event.stopPropagation();
             });
 
+            // click edit button multi select
             $('#btn-edit-classmap').on('click', () => {
                 $('.modal-edit').toggleClass('is-visible')
-                let ids = []
-                let clNumber = null
-
-                $('#classMap2_child .tableRow').each(function(index, element) {
-                    if ($(element).hasClass('selected') === true) {
-                        ids.push($(element).children('.edit-cell').attr('classid'))
-
-                        if (clNumber === null) {
-                            clNumber = $(element).children('.edit-cell').attr('clnumber')
-                        } else {
-                            clNumber = ''
-                        }
-                    }
-                })
-
-                let idsString = ids.join(', ')
-                updateModal(idsString, clNumber)
+                updateModal(arrSessionStorage.join(', '), "", 1, ipSessionStorage)
             })
+
+            // fill row selected
+            $('tr[id^="line"]').filter(':not(.disabled_row)').each((_index, element) => {
+                if (arrSessionStorage.length > 0) {
+                    const id = Number($(element).children('.edit-cell').attr('classid'))
+                    if (arrSessionStorage.includes(id)) {
+                        $(element).toggleClass('selected');
+                        $(element).find(':checkbox').prop('checked', true)
+                            .attr('aria-checked', 'true')
+                            .attr('data-prev-check', 'true');
+                    }
+
+                }
+            })
+
+            $('#form-update').submit(() => {
+                sessionStorage.removeItem('class_map_ids')
+            })
+
+            enableEditButton()
         })
     </script>
 <?php

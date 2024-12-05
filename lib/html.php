@@ -2638,6 +2638,7 @@ function html_common_header($title, $selectedTheme = '') {
 	print get_md5_include_css('include/fa/css/all.css');
 	print get_md5_include_css('include/vendor/flag-icons/css/flag-icons.css');
 	print get_md5_include_css('include/themes/' . $selectedTheme .'/main.css');
+	print get_md5_include_css('include/themes/' . $selectedTheme .'/more.css');
 	print get_md5_include_css('include/css/jquery.modal.min.css');
 	if(get_selected_theme() === 'vtidc'){
 		echo get_md5_include_css('include/css/vidc.css');
@@ -2665,6 +2666,7 @@ function html_common_header($title, $selectedTheme = '') {
 	print get_md5_include_js('include/js/dygraph-combined.js', true);
 	print get_md5_include_js('include/js/d3.js');
 	print get_md5_include_js('include/js/billboard.js');
+	print get_md5_include_js('include/js/classMap.js');
 	print get_md5_include_js('include/layout.js');
 	print get_md5_include_js('include/js/pace.js');
 	print get_md5_include_js('include/js/purify.js');
