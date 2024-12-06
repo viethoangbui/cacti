@@ -3,16 +3,33 @@ function handleChangeColumnGraph(e) {
 
     const containerWidth = 90
     const imageWidth = amoutColumn != 1 ? (containerWidth / amoutColumn + '%') : '60%'
+
     $('#graph-view-custom .graphimage').each((_, element) => {
         let $element = $(element)
+
         $element.width(imageWidth)
     })
     $('#graph-preview .graphimage').each((_, element) => {
         let $element = $(element)
         $element.width(imageWidth)
     })
+
     $('#graph-view-custom-sandvine .graphimage').each((_, element) => {
         let $element = $(element)
+        $element.width(imageWidth)
+    })
+}
+
+
+function handleNewColumnGraph(e) {
+    const amoutColumn = e?.target?.value ? e.target.value : e
+
+    const containerWidth = 90
+    const imageWidth = amoutColumn != 1 ? (containerWidth / amoutColumn + '%') : '60%'
+
+    $('#graph-view-custom .warpper-graph').each((_, element) => {
+        let $element = $(element)
+
         $element.width(imageWidth)
     })
 }
@@ -23,7 +40,14 @@ $('.graphimage').each((_, element) => {
 })
 
 
-function processRrd(table, rrd_name_field, graph_name_field, cl_number) {
+function processRrd(table,
+    rrd_name_field,
+    graph_name_field,
+    cl_number,
+    columns = 1
+) {
+    $('#graph-view-custom').empty()
+
     const params = new URLSearchParams({
         table,
         rrd_name_field,
@@ -49,10 +73,12 @@ function processRrd(table, rrd_name_field, graph_name_field, cl_number) {
             // Array to store promises for processing elements
             let divLoading = '';
             data.forEach((_element, index) => {
-                divLoading += `<div key=${index}>loading...</div>`
+                divLoading += `<div key=${index} class="warpper-graph" style="display:inline-block;padding:2px;width:${columns != 1 ? (90 / columns + '%') : '60%'};height:150px;"><div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div></div>`
             });
             $('#graph-view-custom').append(divLoading);
-
+            Pace.start()
+            $('.warpper-graph').addClass('')
+            handleNewColumnGraph(columns)
             const promises = data.map(async (element, index) => {
                 const params = new URLSearchParams({
                     rrd_file: element.path_graph,
@@ -65,7 +91,6 @@ function processRrd(table, rrd_name_field, graph_name_field, cl_number) {
                     key: index
                 });
             });
-
             // Wait for all promises to resolve
             return Promise.all(promises);
         })
@@ -73,7 +98,7 @@ function processRrd(table, rrd_name_field, graph_name_field, cl_number) {
             // Listen for messages from the worker
             worker.onmessage = (event) => {
                 $(`#graph-view-custom div[key=${event.data.key}]`).html(
-                    `<img class="graphimage" loading="lazy" src="${event.data.image}" />`
+                    `<img class="graphimage" loading="lazy" src="${event.data.image}" style="width:100%"/>`
                 );
             };
 

@@ -1019,11 +1019,12 @@ switch (get_nfilter_request_var('action')) {
 	case 'preview_classMap':
 		html_graph_validate_preview_request_vars();
 		top_graph_header();
+		if (isset($_GET['cl_number'])) $_SESSION['cl_number'] = $_GET['cl_number'];
 		html_start_box(__('Graph Preview Filters') . (isset_request_var('style') && get_request_var('style') != '' ? ' ' . __('[ Custom Graph List Applied - Filtering from List ]') : ''), '100%', '', '3', 'center', '');
 		html_graph_preview_filter('graph_view.php', 'preview_classMap');
 		html_end_box();
-		if (!empty($_GET['cl_number'])) {
-			html_start_box(__('Graph Preview Filters') . (isset_request_var('style') && get_request_var('style') != '' ? ' ' . __('') : ''), '100%', '', $_GET['cl_number'], 'center', '');
+		if (!empty($_SESSION['cl_number'])) {
+			html_start_box(__('Graph Preview Filters') . (isset_request_var('style') && get_request_var('style') != '' ? ' ' . __('') : ''), '100%', '', $_SESSION['cl_number'], 'center', '');
 			// $classMaps = db_fetch_assoc_prepared(
 			// 	'SELECT path_graph, ip_address, class_map_name
 			// 		FROM class_map
@@ -1043,14 +1044,14 @@ switch (get_nfilter_request_var('action')) {
 			// $path2 = "C\:/xampp/htdocs/cacti/rra/test2.rrd";
 			// echo '<img class="graphimage" loading="lazy" src="' . executeClassMapd($path1, $path2, 'Test', get_current_graph_start() - 86400 * 10, get_current_graph_end() - 86400 * 10) . '"">';
 			echo '</div>';
-			// }
 		}
 	?>
 		<script type='text/javascript' src="./include/js/layout-custom.js"></script>
 		<script>
-			processRrd('class_map', 'path_graph', 'class_map_name', '7777777')
+			processRrd('class_map', 'path_graph', 'class_map_name', <?= $_SESSION['cl_number']?>, <?php echo get_request_var('columns') ?>)
 		</script>
 <?php
+		// }
 
 		break;
 	case 'graph_details':
