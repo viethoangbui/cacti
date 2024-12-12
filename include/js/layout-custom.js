@@ -73,10 +73,9 @@ function processRrd(table,
             // Array to store promises for processing elements
             let divLoading = '';
             data.forEach((_element, index) => {
-                divLoading += `<div key=${index} class="warpper-graph" style="display:inline-block;padding:2px;width:${columns != 1 ? (90 / columns + '%') : '60%'};height:150px;"><div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div></div>`
+                divLoading += `<div key=${index} class="warpper-graph" style="display:inline-block;padding:2px;width:${columns != 1 ? (90 / columns + '%') : '60%'};min-height:150px;"><div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div></div>`
             });
             $('#graph-view-custom').append(divLoading);
-            Pace.start()
             $('.warpper-graph').addClass('')
             handleNewColumnGraph(columns)
             const promises = data.map(async (element, index) => {

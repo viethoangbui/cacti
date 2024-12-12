@@ -177,7 +177,6 @@ function form_alternate_row_color($row_color1, $row_color2, $row_value, $row_id 
    @arg $reset - Reset to top of table */
 function form_alternate_row($row_id = '', $light = false, $disabled = false) {
 	static $i = 1;
-
 	if ($i % 2 == 1) {
 		$class = 'odd';
 	} elseif ($light) {
@@ -185,7 +184,6 @@ function form_alternate_row($row_id = '', $light = false, $disabled = false) {
 	} else {
 		$class = 'even';
 	}
-
 	$i++;
 
 	if ($row_id != '' && !$disabled && substr($row_id, 0, 4) != 'row_') {

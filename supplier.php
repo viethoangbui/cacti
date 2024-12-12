@@ -1,5 +1,6 @@
 <?php
 require_once('./include/auth.php');
+require_once('./include/myCommond.php');
 
 if (get_request_var('action') === 'ajax_delete') {
     $id = get_filter_request_var('delete_id');
@@ -29,82 +30,15 @@ if (get_request_var('action') === 'ajax_delete') {
     return;
 }
 
+if (get_request_var('action') === 'clear' || !isset($_GET['page'])) {
+    unset($_SESSION['common_sort_column'], $_SESSION['common_sort_direction']);
+}
+
 top_header();
 initial();
 ?>
 <link rel="stylesheet" href="./include/css/supplier.css" />
 <?php
-function drawBodyTable()
-{
-    $sql = 'SELECT * FROM suppliers WHERE is_enable = 1';
-
-    if (!empty($_GET['search'])) {
-        $search = '%' . $_GET['search'] . '%';
-        $sql .= " AND name LIKE ?";
-        $data = db_fetch_assoc_prepared($sql, array($search));
-    } else {
-        $data = db_fetch_assoc($sql);
-    }
-
-    $users = db_fetch_assoc('SELECT id, username FROM user_auth');
-
-    foreach ($data as $key => $value) {
-        foreach ($users as $user) {
-            if ($value['owner'] == $user['id']) {
-                $data[$key]['owner'] = $user['username'];
-            }
-
-            if ($value['edited_by'] == $user['id']) {
-                $data[$key]['edited_by'] = $user['username'];
-            }
-        }
-    }
-
-    if (count($data) === 0) {
-        return "<tr class='tableRow'><td colspan='" . (3) . "'><em>" . __('No Supplier Found') . "</em></td></tr>\n";
-    }
-
-    $result = '';
-
-    foreach ($data as $index => $value) {
-        $count = $index + 1;
-
-        $result .= "
-                        <tr class=\"odd selectable tableRow\" id=\"{$value["id"]}\" name=\"{$value["name"]}\">
-                            <td class=\"nowrap\">
-                                {$count}
-                            </td>
-                            <td class=\"nowrap supplier-name\">
-                                {$value["name"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["owner"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["updated_at"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["edited_by"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                Enable
-                            </td>
-                            <td class=\"nowrap\">
-                                <a class=\"supplier-edit\" 
-                                    style=\"cursor:pointer;\"
-                                    href=\"#ex1\" rel=\"modal:open\"
-                                    >Edit</a>
-                                <a class=\"supplier-delete\" 
-                                    style=\"cursor:pointer;\"
-                                    href=\"#ex2\" rel=\"modal:open\"
-                                >Delete</a>
-                            </td>
-                        </tr>
-                        ";
-    }
-
-    return $result;
-}
 
 function update($input, $id)
 {
@@ -135,9 +69,11 @@ function update($input, $id)
                     updated_at = CURRENT_TIMESTAMP(),
                     edited_by = ?
                     WHERE id = ?',
-            array($nameTrim, $_SESSION['sess_user_id'],$id)
+            array($nameTrim, $_SESSION['sess_user_id'], $id)
         );
-        header("Location: " . $_SERVER['REQUEST_URI']);
+        $page = $_GET['current_page'] ?? '';
+        $url = $_SERVER['SCRIPT_NAME'] . "?page=$page";
+        header("Location: " . $url);
     } else {
         raise_message('name_used');
     }
@@ -174,7 +110,9 @@ function create($input)
                 (name, owner, edited_by, is_enable) VALUES (?,?,?,?)',
             array($nameTrim, $_SESSION['sess_user_id'], $_SESSION['sess_user_id'], 1)
         );
-        header("Location: " . $_SERVER['REQUEST_URI']);
+        $page = $_GET['last_page'] ?? '';
+        $url = $_SERVER['SCRIPT_NAME'] . "?page=$page";
+        header("Location: " . $url);
     }
 }
 
@@ -203,16 +141,16 @@ html_start_box(__('Suppliers'), '100%', '', '3', 'center', [
     ]
 ]);
 ?>
-<tr class='even'>
+<tr class='even noprint'>
     <td>
-        <form id='form_supplier' action='sites.php'>
+        <form id='form_supplier' action=''>
             <table class='filterTable'>
                 <tr>
                     <td>
                         <?php print __('Search'); ?>
                     </td>
                     <td>
-                        <input type='text' class='ui-state-default ui-corner-all' id='filter' size='25' value='<?php print html_escape_request_var('search'); ?>'>
+                        <input type='text' class='ui-state-default ui-corner-all' id='filter' size='25' value='<?php print html_escape_request_var('filter'); ?>'>
                     </td>
                     <td>
                         <span>
@@ -225,13 +163,14 @@ html_start_box(__('Suppliers'), '100%', '', '3', 'center', [
         </form>
         <script type='text/javascript'>
             function applyFilter() {
-                strURL = 'supplier.php?header=false';
-                strURL += '&search=' + $('#filter').val();
+                strURL = 'supplier.php';
+                strURL += '?filter=' + $('#filter').val();
+                strURL += '&header=false';
                 loadPageNoHeader(strURL);
             }
 
             function clearFilter() {
-                strURL = 'supplier.php?clear=1&header=false';
+                strURL = 'supplier.php?action=clear&header=false';
                 loadPageNoHeader(strURL);
             }
 
@@ -253,30 +192,164 @@ html_start_box(__('Suppliers'), '100%', '', '3', 'center', [
     </td>
 </tr>
 
-<section>
-    <p style="color:red;"><?= isset($_GET['message']) ? $_GET['message'] : '' ?></p>
-    <table class="cactiTable" style="width:100%">
-        <tbody>
-            <tr class="tableHeader">
-                <th>#</th>
-                <th>Supplier Name</th>
-                <th>Owner</th>
-                <th>Last Edited</th>
-                <th>Edited By</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-            <?php echo drawBodyTable(); ?>
-        </tbody>
-    </table>
-</section>
+
+<?php
+$display_text = array(
+    'nosort1' => array(
+        'display' => __('#'),
+        'align' => 'left',
+        'tip' => __('Order')
+    ),
+    'name' => array(
+        'display' => __('Supplier Name'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('supplier Name.')
+    ),
+    'owner' => array(
+        'display' => __('Owner'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Owner.')
+    ),
+    'updated_at' => array(
+        'display' => __('Last Edited'),
+        'align' => 'left',
+        'sort' => 'ASC'
+    ),
+    'edited_by' => array(
+        'display' => __('Edited By'),
+        'align' => 'left',
+        'sort' => 'ASC'
+    ),
+    'nosort2' => array(
+        'display' => __('Status'),
+        'align' => 'left',
+        'tip' => __('View.')
+    ),
+    'nosort3' => array(
+        'display' => __('Action'),
+        'align' => 'left',
+        'tip' => __('Actions.')
+    ),
+);
+$display_text_size = sizeof($display_text);
+$display_text = api_plugin_hook_function('supplier_display_text', $display_text);
+$limit = 15;
+$pageDefault = 1;
+$page = isset($_GET['page']) ? convertStrPreventXss($_GET['page']) : $pageDefault;
+$page = (int)$page !== 0 ? (int)$page : $pageDefault;
+
+$offset = ($page - 1) * $limit;
+$sql = "SELECT suppliers.*, 
+        ua1.username AS edited_name_by,
+        ua2.username AS owner_name
+        FROM suppliers 
+        LEFT JOIN user_auth AS ua1 ON suppliers.edited_by = ua1.id
+        LEFT JOIN user_auth AS ua2 ON suppliers.owner = ua2.id
+        WHERE suppliers.is_enable = 1";
+
+$searchFilter = !empty($_GET['filter']) ? '%' . html_escape_request_var('filter') . '%' : null;
+
+$sortColumn = !empty($_GET['sort_column']) ? $_GET['sort_column'] : $_SESSION['common_sort_column'] ?? null;
+$sortDirection = !empty($_GET['sort_direction']) ? $_GET['sort_direction'] : $_SESSION['common_sort_direction'] ?? null;
+
+if ($sortColumn) $_SESSION['common_sort_column'] = $sortColumn;
+if ($sortDirection) $_SESSION['common_sort_direction'] = $sortDirection;
+
+if ($searchFilter) {
+    $sql .= " AND suppliers.name LIKE ?";
+}
+
+if ($sortColumn && $sortDirection) {
+    $sql .= " ORDER BY suppliers.$sortColumn $sortDirection";
+}
+$sql .= " LIMIT $offset, $limit";
+
+$suppliers = $searchFilter ? db_fetch_assoc_prepared($sql, array($searchFilter)) : db_fetch_assoc($sql);
+$total = !$searchFilter ? db_fetch_cell("SELECT COUNT(*) FROM suppliers WHERE is_enable = 1")
+    : db_fetch_cell_prepared("SELECT COUNT(*) FROM suppliers WHERE is_enable = 1 AND name LIKE ?", [$searchFilter]);
+$pageCount = ceil($total / $limit);
+form_start('supplier.php', 'chk');
+?>
+<?php
+
+html_start_box('', '100%', '', '3', 'center', '');
+html_header_sort($display_text, $sortColumn, $sortDirection, false);
+
+if (sizeof($display_text) != $display_text_size && cacti_sizeof($suppliers)) { //display_text changed
+    api_plugin_hook_function('supplier_table_replace', $suppliers);
+} else if (cacti_sizeof($suppliers)) {
+    foreach ($suppliers as $index => $value) {
+        form_alternate_row($value['id'], true);
+        form_selectable_cell(filter_value((($page - 1) * $limit + 1) + $index, get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['owner_name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['updated_at'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['edited_name_by'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value('Enable', get_request_var('filter')), $value['id']);
+        echo "<td class=\"nowrap\">
+                                <a class=\"supplier-edit\" 
+                                    style=\"cursor:pointer;\"
+                                    href=\"#ex1\" rel=\"modal:open\"
+                                    >Edit</a>
+                                <a class=\"supplier-delete\" 
+                                    style=\"cursor:pointer;\"
+                                    href=\"#ex2\" rel=\"modal:open\"
+                                >Delete</a>
+                            </td>";
+
+        form_end_row();
+    }
+} else {
+    print "<tr class='tableRow'><td colspan='" . (cacti_sizeof($display_text) + 1) . "'><em>" . __('No Suppliers Found') . "</em></td></tr>";
+}
+
+html_end_box(false);
+
+form_end();
+api_plugin_hook('device_table_bottom');
+$showDots = false;
+
+?>
+<?php if ($pageCount > 1): ?>
+    <div class="navBarNavigation" style="margin:12px 0;">
+        <div class="navBarNavigationCenter">
+            <?= (($page - 1) * $limit) + 1 ?> to <?= (($page - 1) * $limit) + count($suppliers) ?> of <?= $total ?>
+            [ <ul class="pagination">
+                <?php for ($i = 0; $i < $pageCount; $i++): ?>
+                    <?php if ($i == 0 || $i + 1 == $pageCount || ($page < $i + 4 && $page > $i - 3)): ?>
+                        <li>
+                            <a url="?page=<?= $i + 1 ?>" class="<?= $page === ($i + 1) ? 'active' : '' ?>"
+                                style="cursor: pointer;">
+                                <?= $i + 1 ?></a>
+                        </li>
+                    <?php else: ?>
+                        <?php if (!$showDots || $page == $i - 4):
+                            $showDots = true; ?>
+                            <li><span>..</a></span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+            </ul> ]
+        </div>
+    </div>
+    <script>
+        $(function() {
+            $('ul.pagination li a').on('click', (event) => {
+                strURL = 'supplier.php' + $(event.target).attr('url') + '&header=false';
+                loadPageNoHeader(strURL);
+            })
+        })
+    </script>
+<?php endif; ?>
 
 <section>
     <div id="ex1" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0px;">Supplier Create</h2>
             <div class="modal-body">
-                <form action="" method="post" id="supplier-modal">
+                <form action="?last_page=<?= ceil(($total + 1) / $limit) ?>&current_page=<?= $page ?>" method="post" id="supplier-modal">
                     <div class="area-frist">
                         <label for="supplier-name" class="col-form-label">Name:</label>
                         <input type="text"
@@ -323,7 +396,7 @@ html_start_box(__('Suppliers'), '100%', '', '3', 'center', [
     document.querySelectorAll('.supplier-edit').forEach(element => {
         element.addEventListener('click', (el) => {
             const tr = el.target.parentNode.parentNode;
-            document.getElementById('supplier-name').value = tr.getAttribute('name');
+            document.getElementById('supplier-name').value = tr.children[1].textContent;
             document.getElementById('supplier-id').value = tr.getAttribute('id');
         })
     });
@@ -342,8 +415,8 @@ html_start_box(__('Suppliers'), '100%', '', '3', 'center', [
         })
 
         $('#ex1').on('modal:open', () => {
-            const isUpdate = document.getElementById('supplier-name').value;
-            if (!isUpdate) {
+            const ivaluedate = document.getElementById('supplier-name').value;
+            if (!ivaluedate) {
                 $('.modal-content h2').text('Supplier Create')
             } else {
                 $('.modal-content h2').text('Supplier Update')

@@ -1,5 +1,6 @@
 <?php
 require_once('./include/auth.php');
+require_once('./include/myCommond.php');
 
 if (get_request_var('action') === 'ajax_delete') {
     $id = get_filter_request_var('delete_id');
@@ -29,75 +30,15 @@ if (get_request_var('action') === 'ajax_delete') {
     return;
 }
 
+if (get_request_var('action') === 'clear' || !isset($_GET['page'])) {
+    unset($_SESSION['common_sort_column'], $_SESSION['common_sort_direction']);
+}
+
 top_header();
 initial();
 ?>
 <link rel="stylesheet" href="./include/css/deviceType.css" />
 <?php
-function drawBodyTable()
-{
-    $sql = 'SELECT dt.*, sup.name as supplier_name FROM device_type AS dt
-                LEFT JOIN suppliers as sup
-                ON dt.supplier_id=sup.id
-                WHERE dt.is_enable = 1';
-
-    if (!empty($_GET['search'])) {
-        $search = '%' . $_GET['search'] . '%';
-        $sql .= " AND dt.name LIKE ?";
-        $data = db_fetch_assoc_prepared($sql, array($search));
-    } else {
-        $data = db_fetch_assoc($sql);
-    }
-
-    if (count($data) === 0) {
-        return "<tr class='tableRow'><td colspan='" . (3) . "'><em>" . __('No Device type Found') . "</em></td></tr>\n";
-    }
-
-    $result = '';
-
-    foreach ($data as $index => $value) {
-        $newIndex = $index + 1;
-        $result .= "
-                        <tr class=\"odd selectable tableRow\" 
-                            id=\"{$value["id"]}\" 
-                            name=\"{$value["name"]}\" 
-                            supplier=\"{$value["supplier_id"]}\"
-                            supplier-name=\"{$value["supplier_name"]}\"
-                            >
-                            <td class=\"nowrap\">
-                                {$newIndex}
-                            </td>
-                            <td class=\"nowrap device_type-name\">
-                                {$value["name"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["supplier_name"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["owner"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["updated_at"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                {$value["edited_by"]}
-                            </td>
-                            <td class=\"nowrap\">
-                                <a class=\"device_type-edit\" 
-                                    style=\"cursor:pointer;\"
-                                    href=\"#ex1dt\" rel=\"modal:open\"
-                                    >Edit</a>
-                                <a class=\"device_type-delete\" 
-                                    style=\"cursor:pointer;\"
-                                    href=\"#ex2\" rel=\"modal:open\"
-                                >Delete</a>
-                            </td>
-                        </tr>
-                        ";
-    }
-
-    return $result;
-}
 
 function drawSelect()
 {
@@ -109,7 +50,7 @@ function drawSelect()
                     <option>None</option>
                     ';
     $content = '';
-    foreach ($data as $index => $value) {
+    foreach ($data as $value) {
         $content .= "<option value=\"{$value['id']}\">{$value['name']}</option>";
     }
 
@@ -142,12 +83,6 @@ function update($input, $supplierId, $id)
 
     if ($names == 0) {
         $supplierId = trim(htmlspecialchars($supplierId, ENT_QUOTES, 'UTF-8'), ' ');
-        $username = db_fetch_cell_prepared(
-            'SELECT username
-        FROM user_auth
-        WHERE id = ?',
-            array($_SESSION['sess_user_id'])
-        );
 
         db_execute_prepared(
             'UPDATE device_type
@@ -156,9 +91,8 @@ function update($input, $supplierId, $id)
                 supplier_id = ?,
                 edited_by = ?
                 WHERE id = ?',
-            array($nameTrim, $supplierId, $username, $id)
+            array($nameTrim, $supplierId, $_SESSION['sess_user_id'], $id)
         );
-        header("Location: " . $_SERVER['REQUEST_URI']);
     } else {
         raise_message('name_used');
     }
@@ -192,15 +126,11 @@ function create($input, $supplierId)
     if ($total >= 1) {
         raise_message('name_used');
     } else {
-        $user = db_fetch_assoc_prepared('SELECT username
-                                            FROM user_auth 
-                                            WHERE id = ?', array($_SESSION['sess_user_id']));
         db_execute_prepared(
             'INSERT INTO device_type
                 (name, supplier_id, owner, edited_by) VALUES (?, ?, ?, ?)',
-            array($nameTrim, $supplierId, $user[0]['username'], $user[0]['username'])
+            array($nameTrim, $supplierId, $_SESSION['sess_user_id'], $_SESSION['sess_user_id'])
         );
-        header("Location: " . $_SERVER['REQUEST_URI']);
     }
 }
 
@@ -231,14 +161,14 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
 ?>
 <tr class='even'>
     <td>
-        <form id='form_device_type' action='sites.php'>
+        <form id='form_device_type' action=''>
             <table class='filterTable'>
                 <tr>
                     <td>
                         <?php print __('Search'); ?>
                     </td>
                     <td>
-                        <input type='text' class='ui-state-default ui-corner-all' id='filter' size='25' value='<?php print html_escape_request_var('search'); ?>'>
+                        <input type='text' class='ui-state-default ui-corner-all' id='filter' size='25' value='<?php print html_escape_request_var('filter'); ?>'>
                     </td>
                     <td>
                         <span>
@@ -251,13 +181,14 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
         </form>
         <script type='text/javascript'>
             function applyFilter() {
-                strURL = 'device_type.php?header=false';
-                strURL += '&search=' + $('#filter').val();
+                strURL = 'device_type.php';
+                strURL += '?filter=' + $('#filter').val();
+                strURL += '&header=false&nostate=true';
                 loadPageNoHeader(strURL);
             }
 
             function clearFilter() {
-                strURL = 'device_type.php?clear=1&header=false';
+                strURL = 'device_type.php?action=clear&header=false&nostate=true';
                 loadPageNoHeader(strURL);
             }
 
@@ -279,23 +210,164 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
     </td>
 </tr>
 
-<section>
-    <p style="color:red;"><?= isset($_GET['message']) ? $_GET['message'] : '' ?></p>
-    <table class="cactiTable" style="width:100%">
-        <tbody>
-            <tr class="tableHeader">
-                <th>#</th>
-                <th>Device type</th>
-                <th>Supplier</th>
-                <th>Owner</th>
-                <th>Last Edited</th>
-                <th>Edited By</th>
-                <th>Action</th>
-            </tr>
-            <?= drawBodyTable(); ?>
-        </tbody>
-    </table>
-</section>
+<?php
+$display_text = array(
+    'nosort1' => array(
+        'display' => __('#'),
+        'align' => 'left',
+        'tip' => __('Order')
+    ),
+    'name' => array(
+        'display' => __('Device type'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Device type.')
+    ),
+    'supplier_id' => array(
+        'display' => __('Supplier'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Supplier Name.')
+    ),
+    'owner' => array(
+        'display' => __('Owner'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Owner.')
+    ),
+    'updated_at' => array(
+        'display' => __('Last Edited'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Owner.')
+    ),
+    'edited_by' => array(
+        'display' => __('Edited By'),
+        'align' => 'left',
+        'sort' => 'ASC'
+    ),
+    'nosort3' => array(
+        'display' => __('Action'),
+        'align' => 'left',
+        'tip' => __('Actions.')
+    ),
+);
+$display_text_size = sizeof($display_text);
+$display_text = api_plugin_hook_function('device_type_display_text', $display_text);
+$limit = 15;
+$pageDefault = 1;
+$page = isset($_GET['page']) ? convertStrPreventXss($_GET['page']) : $pageDefault;
+$page = (int)$page !== 0 ? (int)$page : $pageDefault;
+
+$offset = ($page - 1) * $limit;
+$sql = "SELECT device_type.*, 
+        ua1.username AS edited_name_by,
+        ua2.username AS owner_name,
+        sp.name AS supplier_name
+        FROM device_type 
+        LEFT JOIN user_auth AS ua1 ON device_type.edited_by = ua1.id
+        LEFT JOIN user_auth AS ua2 ON device_type.owner = ua2.id
+        LEFT JOIN suppliers AS sp ON device_type.supplier_id = sp.id
+        WHERE device_type.is_enable = 1";
+
+$searchFilter = !empty($_GET['filter']) ? '%' . html_escape_request_var('filter') . '%' : null;
+
+$sortColumn = !empty($_GET['sort_column']) ? $_GET['sort_column'] : $_SESSION['common_sort_column'] ?? null;
+$sortDirection = !empty($_GET['sort_direction']) ? $_GET['sort_direction'] : $_SESSION['common_sort_direction'] ?? null;
+
+if ($sortColumn) $_SESSION['common_sort_column'] = $sortColumn;
+if ($sortDirection) $_SESSION['common_sort_direction'] = $sortDirection;
+
+if ($searchFilter) {
+    $sql .= " AND device_type.name LIKE ?";
+}
+
+if ($sortColumn && $sortDirection) {
+    $sql .= " ORDER BY device_type.$sortColumn $sortDirection";
+}
+$sql .= " LIMIT $offset, $limit";
+
+$deviceTypes = $searchFilter ? db_fetch_assoc_prepared($sql, array($searchFilter)) : db_fetch_assoc($sql);
+$total = !$searchFilter ? db_fetch_cell("SELECT COUNT(*) FROM device_type WHERE is_enable = 1")
+    : db_fetch_cell_prepared("SELECT COUNT(*) FROM device_type WHERE is_enable = 1 AND name LIKE ?", [$searchFilter]);
+$pageCount = ceil($total / $limit);
+form_start('device_type.php', 'chk');
+?>
+<?php
+
+html_start_box('', '100%', '', '3', 'center', '');
+html_header_sort($display_text, $sortColumn, $sortDirection, false);
+
+if (sizeof($display_text) != $display_text_size && cacti_sizeof($deviceTypes)) { //display_text changed
+    api_plugin_hook_function('supplier_table_replace', $deviceTypes);
+} else if (cacti_sizeof($deviceTypes)) {
+    foreach ($deviceTypes as $index => $value) {
+        form_alternate_row($value['id'], true);
+        form_selectable_cell(filter_value((($page - 1) * $limit + 1) + $index, get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['supplier_name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['owner_name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['updated_at'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['edited_name_by'], get_request_var('filter')), $value['id']);
+        echo "<td class=\"nowrap\" style=\"display:none;\">{$value['supplier_id']}</td>";
+        echo "<td class=\"nowrap\">
+                                <a class=\"device_type-edit\" 
+                                    style=\"cursor:pointer;\"
+                                    href=\"#ex1dt\" rel=\"modal:open\"
+                                    >Edit</a>
+                                <a class=\"device_type-delete\" 
+                                    style=\"cursor:pointer;\"
+                                    href=\"#ex2\" rel=\"modal:open\"
+                                >Delete</a>
+                            </td>";
+
+        form_end_row();
+    }
+} else {
+    print "<tr class='tableRow'><td colspan='" . (cacti_sizeof($display_text) + 1) . "'><em>" . __('No Suppliers Found') . "</em></td></tr>";
+}
+
+html_end_box(false);
+
+form_end();
+api_plugin_hook('device_table_bottom');
+$showDots = false;
+
+?>
+<?php if ($pageCount > 1): ?>
+    <div class="navBarNavigation" style="margin:12px 0;">
+        <div class="navBarNavigationCenter">
+            <?= (($page - 1) * $limit) + 1 ?> to <?= (($page - 1) * $limit) + count($deviceTypes) ?> of <?= $total ?>
+            [ <ul class="pagination">
+                <?php for ($i = 0; $i < $pageCount; $i++): ?>
+                    <?php if ($i == 0 || $i + 1 == $pageCount || ($page < $i + 4 && $page > $i - 3)): ?>
+                        <li>
+                            <a url="?page=<?= $i + 1 ?>" class="<?= $page === ($i + 1) ? 'active' : '' ?>"
+                                style="cursor: pointer;">
+                                <?= $i + 1 ?></a>
+                        </li>
+                    <?php else: ?>
+                        <?php if (!$showDots || $page == $i - 4):
+                            $showDots = true; ?>
+                            <li><span>..</a></span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+            </ul> ]
+        </div>
+    </div>
+    <script>
+        $(function() {
+            $('ul.pagination li a').on('click', (event) => {
+                $('#ex1dt').remove()
+                $('#ex2').remove()
+
+                strURL = 'device_type.php' + $(event.target).attr('url') + '&header=false&nostate=true';
+                loadPageNoHeader(strURL);
+            })
+        })
+    </script>
+<?php endif; ?>
 
 <section>
     <div id="ex1dt" class="modal">
@@ -317,7 +389,6 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
                                 name="name"
                                 placeholder="Enter name">
                             <input type="hidden" id="device_type-id" name="id" />
-                            <input type="hidden" id="supplier_id-update" name="supplier-id" />
                         </div>
                     </div>
                     <div class="area-second">
@@ -352,30 +423,39 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
 </section>
 
 <script>
-    document.querySelectorAll('.device_type-edit').forEach(element => {
-        element.addEventListener('click', (el) => {
-            const tr = el.target.parentNode.parentNode;
-            document.getElementById('device_type-name').value = tr.getAttribute('name');
-            document.getElementById('device_type-id').value = tr.getAttribute('id');
-            $('#supplier_id-update').attr('supplier_id-update', tr.getAttribute('supplier'));
-            $('#supplier_select').val(tr.getAttribute('supplier'));
-            $('#supplier_select-button .ui-selectmenu-text').text(tr.getAttribute('supplier-name'));
-        })
-    });
-
-    document.querySelectorAll('.device_type-delete').forEach(element => {
-        element.addEventListener('click', (el) => {
-            const tr = el.target;
-            const id = tr.parentNode.parentNode.getAttribute('id');
-            localStorage.setItem('delete_id', id);
-        })
-    });
-
     $(document).ready(function() {
+        document.querySelectorAll('.device_type-edit').forEach(element => {
+            element.addEventListener('click', (el) => {
+                const tr = el.target.parentNode.parentNode;
+                $('#device_type-name').val(tr.children[1].textContent);
+                $('#device_type-id').val(tr.getAttribute('id'));
+                $('#supplier_id-update').attr('supplier_id-update', tr.children[6].textContent);
+                $('#supplier_select').val(tr.children[6].textContent);
+
+                $('#supplier_select-button .ui-selectmenu-text').text(tr.children[2].textContent);
+            })
+        });
+
+        document.querySelectorAll('.device_type-delete').forEach(element => {
+            element.addEventListener('click', (el) => {
+                const tr = el.target;
+                const id = tr.parentNode.parentNode.getAttribute('id');
+                localStorage.setItem('delete_id', id);
+            })
+        });
+
         $('#ex1dt').on('modal:close', () => {
-            document.getElementById('device_type-name').value = '';
+            $('device_type-name').val('');
             $('#supplier_select').val('None')
             $('#supplier_select-button .ui-selectmenu-text').text('None')
+
+            $('#supplier_select-button').css(
+                'border', ''
+            )
+
+            $('#device_type-name').css(
+                'border', ''
+            )
         })
 
         $('#ex1dt').on('modal:open', () => {
@@ -393,13 +473,14 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
 
         $('.btn-danger').on('click', () => {
             const deleteId = localStorage.getItem('delete_id', id);
-
             if (deleteId) {
+                renderLoading()
                 $.post('device_type.php?action=ajax_delete', {
                     delete_id: deleteId,
                     __csrf_magic: csrfMagicToken
                 }).done(function(data) {
                     const responseData = JSON.parse(data)
+                    Pace.stop()
 
                     if (responseData.message === 'failed') {
                         sessionMessage = {
@@ -408,13 +489,32 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
                         };
                         displayMessages()
                     } else {
-                        location.reload()
+                        let page = '<?= $page ?>';
+                        if ('<?= count($deviceTypes) ?>' == 1 && page != 1) {
+                            page = Number(page) - 1
+                        }
+
+                        let loadPageUrl = `device_type.php?page=${page}&header=false&nostate=true`
+                        loadPageNoHeader(loadPageUrl)
+                        applySkin()
+
+                        $('.jquery-modal').hide()
+                        $('#ex1dt').remove()
+                        $('#ex2').remove()
                     }
                 });
             }
         })
 
         $('#device_type-modal').submit((e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            const dataSend = {};
+            formData.forEach(function(value, key) {
+                dataSend[key] = value;
+            });
+
             $('.area-second button[type=submit]').removeAttr('disabled');
             $('.area-second button[type=submit]').removeClass('ui-button-disabled ui-state-disabled');
             let supplierSelectValue = $('#supplier_select').val();
@@ -422,25 +522,43 @@ html_start_box(__('Device type'), '100%', '', '3', 'center', [
             let isValidate = supplierSelectValue === 'None' || inputTextValue === ''
 
             if (isValidate) {
-                e.preventDefault();
+                if (supplierSelectValue === 'None') {
+                    $('#supplier_select-button').css(
+                        'border', '1px solid red'
+                    )
+                }
+
+                if (inputTextValue === '') {
+                    $('#device_type-name').css(
+                        'border', '1px solid red'
+                    )
+                }
+
                 sessionMessage = {
                     message: '<?php print __esc('Bạn cần điền đầy đủ các trường'); ?>',
                     level: MESSAGE_LEVEL_ERROR
                 };
                 displayMessages()
+                return;
             }
 
-            if (supplierSelectValue === 'None') {
-                $('#supplier_select-button').css({
-                    'border': '1px solid red'
-                })
+            let page = '<?= ceil(($total + 1) / $limit) ?>'
+            if (dataSend?.id) {
+                page = '<?= $page ?>'
             }
 
-            if (inputTextValue === '') {
-                $('#device_type-name').css({
-                    'border': '1px solid red'
-                })
-            }
+            let loadPageUrl = `device_type.php?page=${page}&header=false&nostate=true`
+            renderLoading()
+
+            $.post('device_type.php', dataSend, function(data) {
+                Pace.stop()
+                loadPageNoHeader(loadPageUrl)
+                applySkin()
+
+                $('.jquery-modal').hide()
+                $('#ex1dt').remove()
+                $('#ex2').remove()
+            });
         })
 
         $('#supplier_select').change((e) => {

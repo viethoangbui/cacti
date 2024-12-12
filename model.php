@@ -1,5 +1,6 @@
 <?php
 require_once('./include/auth.php');
+require_once('./include/myCommond.php');
 
 if (get_request_var('action') === 'ajax_device_type') {
     $noneItem = ['id' => 'None', 'name' => 'None'];
@@ -7,7 +8,7 @@ if (get_request_var('action') === 'ajax_device_type') {
         echo json_encode([$noneItem]);
     } else {
         $supplierId = get_filter_request_var('supplier_id');
-        $deviceTypes = db_fetch_assoc_prepared(
+        $models = db_fetch_assoc_prepared(
             'SELECT name, id
 				FROM device_type
 				WHERE supplier_id = ?
@@ -15,8 +16,8 @@ if (get_request_var('action') === 'ajax_device_type') {
 				',
             array($supplierId)
         );
-        array_unshift($deviceTypes, $noneItem);
-        echo json_encode($deviceTypes);
+        array_unshift($models, $noneItem);
+        echo json_encode($models);
     }
     return;
 }
@@ -42,7 +43,7 @@ if (get_request_var('action') === 'ajax_model') {
         array($deviceType['supplier_id'])
     );
 
-    $deviceTypes = db_fetch_assoc_prepared(
+    $models = db_fetch_assoc_prepared(
         'SELECT name, id
             FROM device_type
             WHERE supplier_id = ?
@@ -51,12 +52,12 @@ if (get_request_var('action') === 'ajax_model') {
         array($supplier['id'])
     );
     $noneItem = ['id' => 'None', 'name' => 'None'];
-    array_unshift($deviceTypes, $noneItem);
+    array_unshift($models, $noneItem);
 
     echo json_encode([
         'device_type' => $deviceType,
         'supplier' => $supplier,
-        'device_types' => $deviceTypes,
+        'device_types' => $models,
         'model' => $model
     ]);
 
@@ -89,6 +90,10 @@ if (get_request_var('action') === 'ajax_delete') {
     }
 
     return;
+}
+
+if (get_request_var('action') === 'clear' || !isset($_GET['page'])) {
+    unset($_SESSION['common_sort_column'], $_SESSION['common_sort_direction']);
 }
 
 top_header();
@@ -154,11 +159,11 @@ function drawBodyTable()
                                 {$value["edited_by"]}
                             </td>
                             <td class=\"nowrap\">
-                                <a class=\"device_type-edit\" 
+                                <a class=\"model-edit\" 
                                     style=\"cursor:pointer;\"
                                     href=\"#ex1m\" rel=\"modal:open\"
                                     >Edit</a>
-                                <a class=\"device_type-delete\" 
+                                <a class=\"model-delete\" 
                                     style=\"cursor:pointer;\"
                                     href=\"#ex2\" rel=\"modal:open\"
                                 >Delete</a>
@@ -181,7 +186,7 @@ function drawSelectSuppliers()
                     ';
     $content = '';
 
-    foreach ($data as $index => $value) {
+    foreach ($data as $value) {
         $content .= "<option value=\"{$value['id']}\">{$value['name']}</option>";
     }
 
@@ -350,7 +355,7 @@ html_start_box(__('Model'), '100%', '', '3', 'center', [
                         <?php print __('Search'); ?>
                     </td>
                     <td>
-                        <input type='text' class='ui-state-default ui-corner-all' id='filter' size='25' value='<?php print html_escape_request_var('search'); ?>'>
+                        <input type='text' class='ui-state-default ui-corner-all' id='filter' size='25' value='<?php print html_escape_request_var('filter'); ?>'>
                     </td>
                     <td>
                         <span>
@@ -363,13 +368,14 @@ html_start_box(__('Model'), '100%', '', '3', 'center', [
         </form>
         <script type='text/javascript'>
             function applyFilter() {
-                strURL = 'model.php?header=false';
-                strURL += '&search=' + $('#filter').val();
+                strURL = 'model.php';
+                strURL += '?filter=' + $('#filter').val();
+                strURL += '&header=false&nostate=true';
                 loadPageNoHeader(strURL);
             }
 
             function clearFilter() {
-                strURL = 'model.php?clear=1&header=false';
+                strURL = 'model.php?action=clear&header=false&nostate=true';
                 loadPageNoHeader(strURL);
             }
 
@@ -391,25 +397,181 @@ html_start_box(__('Model'), '100%', '', '3', 'center', [
     </td>
 </tr>
 
-<section>
-    <p style="color:red;"><?= isset($_GET['message']) ? $_GET['message'] : '' ?></p>
-    <table class="cactiTable" style="width:100%">
-        <tbody>
-            <tr class="tableHeader">
-                <th>#</th>
-                <th>Model</th>
-                <th>Snmp version</th>
-                <th>Supplier</th>
-                <th>Device type</th>
-                <th>Owner</th>
-                <th>Last Edited</th>
-                <th>Edited By</th>
-                <th>Action</th>
-            </tr>
-            <?= drawBodyTable(); ?>
-        </tbody>
-    </table>
-</section>
+<?php
+$display_text = array(
+    'nosort1' => array(
+        'display' => __('#'),
+        'align' => 'left',
+        'tip' => __('Order')
+    ),
+    'name' => array(
+        'display' => __('Model'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Model.')
+    ),
+    'snmp_version' => array(
+        'display' => __('Snmp version'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Snmp version.')
+    ),
+    'supplier_id' => array(
+        'display' => __('Supplier'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Supplier.')
+    ),
+    'device_type_id' => array(
+        'display' => __('Device type'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Device type.')
+    ),
+    'owner' => array(
+        'display' => __('Owner'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Owner.')
+    ),
+    'updated_at' => array(
+        'display' => __('Last Edited'),
+        'align' => 'left',
+        'sort' => 'ASC',
+        'tip' => __('Updated at.')
+    ),
+    'edited_by' => array(
+        'display' => __('Edited By'),
+        'align' => 'left',
+        'sort' => 'ASC'
+    ),
+    'nosort3' => array(
+        'display' => __('Action'),
+        'align' => 'left',
+        'tip' => __('Actions.')
+    ),
+);
+$display_text_size = sizeof($display_text);
+$display_text = api_plugin_hook_function('device_type_display_text', $display_text);
+$limit = 15;
+$pageDefault = 1;
+$page = isset($_GET['page']) ? convertStrPreventXss($_GET['page']) : $pageDefault;
+$page = (int)$page !== 0 ? (int)$page : $pageDefault;
+
+$offset = ($page - 1) * $limit;
+$sql = "SELECT m.*, 
+        ua1.username AS edited_name_by,
+        ua2.username AS owner_name,
+        sup.name AS supplier_name,
+        dt.name AS device_type_name
+        FROM model AS m
+        LEFT JOIN user_auth AS ua1 ON m.edited_by = ua1.id
+        LEFT JOIN user_auth AS ua2 ON m.owner = ua2.id
+        LEFT JOIN device_type as dt
+            ON m.device_type_id=dt.id
+            LEFT JOIN suppliers as sup
+            ON dt.supplier_id=sup.id
+        WHERE m.is_enable = 1";
+
+$searchFilter = !empty($_GET['filter']) ? '%' . html_escape_request_var('filter') . '%' : null;
+
+$sortColumn = !empty($_GET['sort_column']) ? $_GET['sort_column'] : $_SESSION['common_sort_column'] ?? null;
+$sortDirection = !empty($_GET['sort_direction']) ? $_GET['sort_direction'] : $_SESSION['common_sort_direction'] ?? null;
+
+if ($sortColumn) $_SESSION['common_sort_column'] = $sortColumn;
+if ($sortDirection) $_SESSION['common_sort_direction'] = $sortDirection;
+
+if ($searchFilter) {
+    $sql .= " AND model.name LIKE ?";
+}
+
+if ($sortColumn && $sortDirection) {
+    $sql .= " ORDER BY m.$sortColumn $sortDirection";
+}
+$sql .= " LIMIT $offset, $limit";
+$models = $searchFilter ? db_fetch_assoc_prepared($sql, array($searchFilter)) : db_fetch_assoc($sql);
+$total = !$searchFilter ? db_fetch_cell("SELECT COUNT(*) FROM model WHERE is_enable = 1")
+    : db_fetch_cell_prepared("SELECT COUNT(*) FROM model WHERE is_enable = 1 AND name LIKE ?", [$searchFilter]);
+$pageCount = ceil($total / $limit);
+form_start('model.php', 'chk');
+?>
+<?php
+
+html_start_box('', '100%', '', '3', 'center', '');
+html_header_sort($display_text, $sortColumn, $sortDirection, false);
+
+if (sizeof($display_text) != $display_text_size && cacti_sizeof($models)) { //display_text changed
+    api_plugin_hook_function('model_table_replace', $models);
+} else if (cacti_sizeof($models)) {
+    foreach ($models as $index => $value) {
+        form_alternate_row($value['id'], true);
+        form_selectable_cell(filter_value((($page - 1) * $limit + 1) + $index, get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['snmp_version'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['supplier_name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['device_type_name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['owner_name'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['updated_at'], get_request_var('filter')), $value['id']);
+        form_selectable_cell(filter_value($value['edited_name_by'], get_request_var('filter')), $value['id']);
+        // echo "<td class=\"nowrap\" style=\"display:none;\">{$value['supplier_id']}</td>";
+        echo "<td class=\"nowrap\">
+                                <a class=\"model-edit\" 
+                                    style=\"cursor:pointer;\"
+                                    href=\"#ex1m\" rel=\"modal:open\"
+                                    >Edit</a>
+                                <a class=\"model-delete\" 
+                                    style=\"cursor:pointer;\"
+                                    href=\"#ex2\" rel=\"modal:open\"
+                                >Delete</a>
+                            </td>";
+
+        form_end_row();
+    }
+} else {
+    print "<tr class='tableRow'><td colspan='" . (cacti_sizeof($display_text) + 1) . "'><em>" . __('No Models Found') . "</em></td></tr>";
+}
+
+html_end_box(false);
+
+form_end();
+api_plugin_hook('device_table_bottom');
+$showDots = false;
+
+?>
+<?php if ($pageCount > 1): ?>
+    <div class="navBarNavigation" style="margin:12px 0;">
+        <div class="navBarNavigationCenter">
+            <?= (($page - 1) * $limit) + 1 ?> to <?= (($page - 1) * $limit) + count($models) ?> of <?= $total ?>
+            [ <ul class="pagination">
+                <?php for ($i = 0; $i < $pageCount; $i++): ?>
+                    <?php if ($i == 0 || $i + 1 == $pageCount || ($page < $i + 4 && $page > $i - 3)): ?>
+                        <li>
+                            <a url="?page=<?= $i + 1 ?>" class="<?= $page === ($i + 1) ? 'active' : '' ?>"
+                                style="cursor: pointer;">
+                                <?= $i + 1 ?></a>
+                        </li>
+                    <?php else: ?>
+                        <?php if (!$showDots || $page == $i - 4):
+                            $showDots = true; ?>
+                            <li><span>..</a></span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+            </ul> ]
+        </div>
+    </div>
+    <script>
+        $(function() {
+            $('ul.pagination li a').on('click', (event) => {
+                $('#ex1dt').remove()
+                $('#ex2').remove()
+
+                strURL = 'device_type.php' + $(event.target).attr('url') + '&header=false&nostate=true';
+                loadPageNoHeader(strURL);
+            })
+        })
+    </script>
+<?php endif; ?>
 
 <section>
     <div id="ex1m" class="modal">
@@ -504,7 +666,7 @@ html_start_box(__('Model'), '100%', '', '3', 'center', [
             document.getElementById('model-name').value = '';
         })
 
-        document.querySelectorAll('.device_type-edit').forEach(element => {
+        document.querySelectorAll('.model-edit').forEach(element => {
             element.addEventListener('click', (el) => {
                 const tr = el.target.parentNode.parentNode;
                 document.getElementById('model-name').value = tr.getAttribute('name');
@@ -528,7 +690,7 @@ html_start_box(__('Model'), '100%', '', '3', 'center', [
             })
         });
 
-        document.querySelectorAll('.device_type-delete').forEach(element => {
+        document.querySelectorAll('.model-delete').forEach(element => {
             element.addEventListener('click', (el) => {
                 const tr = el.target;
                 const id = tr.parentNode.parentNode.getAttribute('id');

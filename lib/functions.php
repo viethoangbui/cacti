@@ -1333,9 +1333,9 @@ function cacti_log($string, $output = false, $environ = 'CMDPHP', $level = '')
 	global $config, $database_log;
 
 ?>
-	<script>		
+	<!-- <script>		
 		showNotificationWithClose('<?= "Device ERROR: HOST EVENT: Device is DOWN Message: " ?>', 'error')
-	</script>
+	</script> -->
 	<?php
 
 	static $start = null;
@@ -1889,9 +1889,9 @@ function update_host_status($status, $host_id, &$ping, $ping_availability, $prin
 	if ($issue_log_message) {
 		if ($host['status'] == HOST_DOWN) {
 	?>
-			<script>
+			<!-- <script>
 				showNotificationWithClose(<?= "Device[$host_id] ERROR: HOST EVENT: Device is DOWN Message: " . $host['status_last_error'] ?>, 'error')
-			</script>
+			</script> -->
 <?php
 			cacti_log("Device[$host_id] ERROR: HOST EVENT: Device is DOWN Message: " . $host['status_last_error'], $print_data_to_stdout);
 		} else {
@@ -8008,5 +8008,38 @@ final class ProcessRrd
 		$data = $this->list ?? [];
 		header('Content-Type: application/json; charset=utf-8');
 		echo json_encode($data);
+	}
+}
+
+class Pagination
+{
+	protected $table;
+
+	public function __construct(string $table = null)
+	{
+		$this->table = $table;
+	}
+}
+
+class Excel
+{
+	public static function exportDefault(string $fileName, array $data)
+	{
+		$stdout = fopen('php://output', 'w');
+
+		header('Content-type: application/excel');
+		header("Content-Disposition: attachment; filename={$fileName}-" . time() . '.csv');
+
+		if (cacti_sizeof($data)) {
+			$columns = array_keys($data[0]);
+			$columns = array_map('ucfirst', $columns);
+			fputcsv($stdout, $columns);
+
+			foreach ($data as $r) {
+				fputcsv($stdout, $r);
+			}
+		}
+
+		fclose($stdout);
 	}
 }
